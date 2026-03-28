@@ -1,4 +1,5 @@
-# STG01 / key-vault
+# DEV01 / key-vault-secondary
+# Secondary region Key Vault for failover secret access
 include "root" {
   path = find_in_parent_folders()
 }
@@ -12,8 +13,8 @@ locals {
   env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 }
 
-dependency "resource_group" {
-  config_path = "../resource-group"
+dependency "resource_group_secondary" {
+  config_path = "../resource-group-secondary"
 }
 
 dependency "monitoring" {
@@ -21,9 +22,9 @@ dependency "monitoring" {
 }
 
 inputs = {
-  name                       = "kv-${local.env_vars.locals.name_prefix}"
-  resource_group_name        = dependency.resource_group.outputs.name
-  location                   = dependency.resource_group.outputs.location
+  name                       = "kv-${local.env_vars.locals.name_prefix}-sec"
+  resource_group_name        = dependency.resource_group_secondary.outputs.name
+  location                   = local.env_vars.locals.secondary_location
   tenant_id                  = local.env_vars.locals.tenant_id
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
 }

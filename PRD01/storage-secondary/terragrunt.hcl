@@ -1,4 +1,4 @@
-# DEV01 / storage
+# PRD01 / storage-secondary
 include "root" {
   path = find_in_parent_folders()
 }
@@ -12,12 +12,8 @@ locals {
   env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 }
 
-dependency "resource_group" {
-  config_path = "../resource-group"
-}
-
-dependency "networking" {
-  config_path = "../networking"
+dependency "resource_group_secondary" {
+  config_path = "../resource-group-secondary"
 }
 
 dependency "monitoring" {
@@ -25,8 +21,8 @@ dependency "monitoring" {
 }
 
 inputs = {
-  name                       = "st${replace(local.env_vars.locals.name_prefix, "-", "")}${local.env_vars.locals.primary_short}"
-  resource_group_name        = dependency.resource_group.outputs.name
-  location                   = dependency.resource_group.outputs.location
+  name                       = "st${replace(local.env_vars.locals.name_prefix, "-", "")}${local.env_vars.locals.secondary_short}"
+  resource_group_name        = dependency.resource_group_secondary.outputs.name
+  location                   = local.env_vars.locals.secondary_location
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
 }

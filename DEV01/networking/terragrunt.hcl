@@ -16,43 +16,54 @@ dependency "resource_group" {
   config_path = "../resource-group"
 }
 
+dependency "networking_secondary" {
+  config_path = "../networking-secondary"
+
+  mock_outputs = {
+    vnet_id = "mock-secondary-vnet-id"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  skip_outputs = !fileexists("${get_terragrunt_dir()}/../networking-secondary/terragrunt.hcl")
+}
+
 inputs = {
   resource_group_name = dependency.resource_group.outputs.name
   location            = local.env_vars.locals.primary_location
   vnet_name           = "vnet-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.1.0.0/16"]
+  secondary_vnet_id   = dependency.networking_secondary.outputs.vnet_id
 
   subnets = {
     "snet-apim" = {
-      address_prefixes  = ["10.0.1.0/24"]
+      address_prefixes  = ["10.1.1.0/24"]
       service_endpoints = ["Microsoft.Web"]
     }
     "snet-app" = {
-      address_prefixes = ["10.0.2.0/24"]
+      address_prefixes = ["10.1.2.0/24"]
       delegation = {
         name    = "Microsoft.Web/serverFarms"
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
     }
     "snet-func" = {
-      address_prefixes = ["10.0.3.0/24"]
+      address_prefixes = ["10.1.3.0/24"]
       delegation = {
         name    = "Microsoft.Web/serverFarms"
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
     }
     "snet-aca" = {
-      address_prefixes = ["10.0.4.0/23"]
+      address_prefixes = ["10.1.4.0/23"]
       delegation = {
         name    = "Microsoft.App/environments"
         actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
       }
     }
     "snet-pe" = {
-      address_prefixes = ["10.0.6.0/24"]
+      address_prefixes = ["10.1.6.0/24"]
     }
     "snet-sqlmi" = {
-      address_prefixes = ["10.0.8.0/24"]
+      address_prefixes = ["10.1.8.0/24"]
       is_sqlmi_subnet  = true
       delegation = {
         name    = "Microsoft.Sql/managedInstances"
@@ -60,7 +71,7 @@ inputs = {
       }
     }
     "snet-redis" = {
-      address_prefixes = ["10.0.9.0/24"]
+      address_prefixes = ["10.1.9.0/24"]
     }
   }
 }

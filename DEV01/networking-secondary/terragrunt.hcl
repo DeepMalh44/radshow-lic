@@ -1,4 +1,5 @@
-# PRD01 / networking
+# DEV01 / networking-secondary
+# Secondary region VNet (10.2.0.0/16) — mirrors primary subnet layout
 include "root" {
   path = find_in_parent_folders()
 }
@@ -12,58 +13,48 @@ locals {
   env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
 }
 
-dependency "resource_group" {
-  config_path = "../resource-group"
-}
-
-dependency "networking_secondary" {
-  config_path = "../networking-secondary"
-
-  mock_outputs = {
-    vnet_id = "mock-secondary-vnet-id"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-  skip_outputs = !fileexists("${get_terragrunt_dir()}/../networking-secondary/terragrunt.hcl")
+dependency "resource_group_secondary" {
+  config_path = "../resource-group-secondary"
 }
 
 inputs = {
-  resource_group_name = dependency.resource_group.outputs.name
-  location            = local.env_vars.locals.primary_location
-  vnet_name           = "vnet-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
-  address_space       = ["10.1.0.0/16"]
-  secondary_vnet_id   = dependency.networking_secondary.outputs.vnet_id
+  resource_group_name      = dependency.resource_group_secondary.outputs.name
+  location                 = local.env_vars.locals.secondary_location
+  vnet_name                = "vnet-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
+  address_space            = ["10.2.0.0/16"]
+  enable_private_dns_zones = false  # DNS zones are centralized in primary networking module
 
   subnets = {
     "snet-apim" = {
-      address_prefixes  = ["10.1.1.0/24"]
+      address_prefixes  = ["10.2.1.0/24"]
       service_endpoints = ["Microsoft.Web"]
     }
     "snet-app" = {
-      address_prefixes = ["10.1.2.0/24"]
+      address_prefixes = ["10.2.2.0/24"]
       delegation = {
         name    = "Microsoft.Web/serverFarms"
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
     }
     "snet-func" = {
-      address_prefixes = ["10.1.3.0/24"]
+      address_prefixes = ["10.2.3.0/24"]
       delegation = {
         name    = "Microsoft.Web/serverFarms"
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
     }
     "snet-aca" = {
-      address_prefixes = ["10.1.4.0/23"]
+      address_prefixes = ["10.2.4.0/23"]
       delegation = {
         name    = "Microsoft.App/environments"
         actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
       }
     }
     "snet-pe" = {
-      address_prefixes = ["10.1.6.0/24"]
+      address_prefixes = ["10.2.6.0/24"]
     }
     "snet-sqlmi" = {
-      address_prefixes = ["10.1.8.0/24"]
+      address_prefixes = ["10.2.8.0/24"]
       is_sqlmi_subnet  = true
       delegation = {
         name    = "Microsoft.Sql/managedInstances"
@@ -71,7 +62,7 @@ inputs = {
       }
     }
     "snet-redis" = {
-      address_prefixes = ["10.1.9.0/24"]
+      address_prefixes = ["10.2.9.0/24"]
     }
   }
 }
