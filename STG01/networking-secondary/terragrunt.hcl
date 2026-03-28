@@ -64,5 +64,12 @@ inputs = {
     "snet-redis" = {
       address_prefixes = ["10.2.9.0/24"]
     }
+    "snet-aci" = {
+      address_prefixes = ["10.2.7.0/24"]
+      delegation = {
+        name    = "Microsoft.ContainerInstance/containerGroups"
+        actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+      }
+    }
   }
 }
