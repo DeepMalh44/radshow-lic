@@ -26,7 +26,7 @@ generate "provider" {
         }
         azapi = {
           source  = "Azure/azapi"
-          version = ">= 1.12.0"
+          version = ">= 2.0"
         }
       }
     }
