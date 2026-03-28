@@ -1,4 +1,5 @@
 # DEV01 / front-door
+# Single region — no active-passive (enable_dr=false)
 include "root" {
   path = find_in_parent_folders()
 }
@@ -16,13 +17,120 @@ dependency "resource_group" {
   config_path = "../resource-group"
 }
 
+dependency "function_app" {
+  config_path = "../function-app"
+
+  mock_outputs = {
+    default_hostname = "func-radshow-dev01-scus.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "storage" {
+  config_path = "../storage"
+
+  mock_outputs = {
+    primary_web_host = "stradshowdev01scus.z21.web.core.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   profile_name        = "afd-${local.env_vars.locals.name_prefix}"
   resource_group_name = dependency.resource_group.outputs.name
   waf_policy_name     = "wafafd${replace(local.env_vars.locals.name_prefix, "-", "")}"
 
-  origin_groups = {}  # Configured after backend services are deployed
-  origins       = {}
-  endpoints     = {}
-  routes        = {}
+  endpoints = {
+    "ep-api" = { enabled = true }
+    "ep-spa" = { enabled = true }
+  }
+
+  origin_groups = {
+    "og-api" = {
+      session_affinity_enabled = false
+      health_probe = {
+        interval_in_seconds = 30
+        path                = "/api/healthz"
+        protocol            = "Https"
+        request_type        = "HEAD"
+      }
+      load_balancing = {
+        additional_latency_in_milliseconds = 0
+        sample_size                        = 4
+        successful_samples_required        = 2
+      }
+    }
+    "og-spa" = {
+      session_affinity_enabled = false
+      health_probe = {
+        interval_in_seconds = 30
+        path                = "/index.html"
+        protocol            = "Https"
+        request_type        = "HEAD"
+      }
+      load_balancing = {
+        additional_latency_in_milliseconds = 0
+        sample_size                        = 4
+        successful_samples_required        = 2
+      }
+    }
+  }
+
+  origins = {
+    "func-primary" = {
+      origin_group_key               = "og-api"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.function_app.outputs.default_hostname
+      origin_host_header             = dependency.function_app.outputs.default_hostname
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 1
+      weight                         = 1000
+    }
+    "spa-primary" = {
+      origin_group_key               = "og-spa"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.storage.outputs.primary_web_host
+      origin_host_header             = dependency.storage.outputs.primary_web_host
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 1
+      weight                         = 1000
+    }
+  }
+
+  routes = {
+    "route-api" = {
+      endpoint_key           = "ep-api"
+      origin_group_key       = "og-api"
+      origin_keys            = ["func-primary"]
+      enabled                = true
+      forwarding_protocol    = "HttpsOnly"
+      https_redirect_enabled = true
+      patterns_to_match      = ["/api/*"]
+      supported_protocols    = ["Http", "Https"]
+      link_to_default_domain = true
+    }
+    "route-spa" = {
+      endpoint_key           = "ep-spa"
+      origin_group_key       = "og-spa"
+      origin_keys            = ["spa-primary"]
+      enabled                = true
+      forwarding_protocol    = "HttpsOnly"
+      https_redirect_enabled = true
+      patterns_to_match      = ["/*"]
+      supported_protocols    = ["Http", "Https"]
+      link_to_default_domain = true
+      cache = {
+        query_string_caching_behavior = "IgnoreQueryString"
+        compression_enabled           = true
+        content_types_to_compress     = [
+          "text/html", "text/css", "application/javascript",
+          "application/json", "image/svg+xml"
+        ]
+      }
+    }
+  }
 }

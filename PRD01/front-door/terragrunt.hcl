@@ -1,4 +1,5 @@
 # PRD01 / front-door
+# Active-Passive: primary (priority=1) → secondary (priority=2)
 include "root" {
   path = find_in_parent_folders()
 }
@@ -16,13 +17,164 @@ dependency "resource_group" {
   config_path = "../resource-group"
 }
 
+dependency "function_app" {
+  config_path = "../function-app"
+
+  mock_outputs = {
+    default_hostname = "func-radshow-prd01-scus.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "function_app_secondary" {
+  config_path = "../function-app-secondary"
+
+  mock_outputs = {
+    default_hostname = "func-radshow-prd01-ncus.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "storage" {
+  config_path = "../storage"
+
+  mock_outputs = {
+    primary_web_host = "stradshowprd01scus.z21.web.core.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "storage_secondary" {
+  config_path = "../storage-secondary"
+
+  mock_outputs = {
+    primary_web_host = "stradshowprd01ncus.z21.web.core.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   profile_name        = "afd-${local.env_vars.locals.name_prefix}"
   resource_group_name = dependency.resource_group.outputs.name
   waf_policy_name     = "wafafd${replace(local.env_vars.locals.name_prefix, "-", "")}"
 
-  origin_groups = {}  # Configured after backend services are deployed
-  origins       = {}
-  endpoints     = {}
-  routes        = {}
+  # ── Endpoints ──
+  endpoints = {
+    "ep-api" = { enabled = true }
+    "ep-spa" = { enabled = true }
+  }
+
+  # ── Origin Groups (active-passive health probes) ──
+  origin_groups = {
+    "og-api" = {
+      session_affinity_enabled = false
+      health_probe = {
+        interval_in_seconds = 30
+        path                = "/api/healthz"
+        protocol            = "Https"
+        request_type        = "HEAD"
+      }
+      load_balancing = {
+        additional_latency_in_milliseconds = 0
+        sample_size                        = 4
+        successful_samples_required        = 2
+      }
+    }
+    "og-spa" = {
+      session_affinity_enabled = false
+      health_probe = {
+        interval_in_seconds = 30
+        path                = "/index.html"
+        protocol            = "Https"
+        request_type        = "HEAD"
+      }
+      load_balancing = {
+        additional_latency_in_milliseconds = 0
+        sample_size                        = 4
+        successful_samples_required        = 2
+      }
+    }
+  }
+
+  # ── Origins (priority drives active-passive) ──
+  origins = {
+    "func-primary" = {
+      origin_group_key               = "og-api"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.function_app.outputs.default_hostname
+      origin_host_header             = dependency.function_app.outputs.default_hostname
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 1
+      weight                         = 1000
+    }
+    "func-secondary" = {
+      origin_group_key               = "og-api"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.function_app_secondary.outputs.default_hostname
+      origin_host_header             = dependency.function_app_secondary.outputs.default_hostname
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 2
+      weight                         = 1000
+    }
+    "spa-primary" = {
+      origin_group_key               = "og-spa"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.storage.outputs.primary_web_host
+      origin_host_header             = dependency.storage.outputs.primary_web_host
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 1
+      weight                         = 1000
+    }
+    "spa-secondary" = {
+      origin_group_key               = "og-spa"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.storage_secondary.outputs.primary_web_host
+      origin_host_header             = dependency.storage_secondary.outputs.primary_web_host
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 2
+      weight                         = 1000
+    }
+  }
+
+  # ── Routes ──
+  routes = {
+    "route-api" = {
+      endpoint_key           = "ep-api"
+      origin_group_key       = "og-api"
+      origin_keys            = ["func-primary", "func-secondary"]
+      enabled                = true
+      forwarding_protocol    = "HttpsOnly"
+      https_redirect_enabled = true
+      patterns_to_match      = ["/api/*"]
+      supported_protocols    = ["Http", "Https"]
+      link_to_default_domain = true
+    }
+    "route-spa" = {
+      endpoint_key           = "ep-spa"
+      origin_group_key       = "og-spa"
+      origin_keys            = ["spa-primary", "spa-secondary"]
+      enabled                = true
+      forwarding_protocol    = "HttpsOnly"
+      https_redirect_enabled = true
+      patterns_to_match      = ["/*"]
+      supported_protocols    = ["Http", "Https"]
+      link_to_default_domain = true
+      cache = {
+        query_string_caching_behavior = "IgnoreQueryString"
+        compression_enabled           = true
+        content_types_to_compress     = [
+          "text/html", "text/css", "application/javascript",
+          "application/json", "image/svg+xml"
+        ]
+      }
+    }
+  }
 }
