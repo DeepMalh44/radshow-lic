@@ -24,7 +24,7 @@ dependency "key_vault" {
 inputs = {
   name                           = "pe-kv-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   location                       = local.env_vars.locals.primary_location
-  resource_group_name            = "rg-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
+  resource_group_name            = dependency.networking.outputs.resource_group_name
   subnet_id                      = dependency.networking.outputs.subnet_ids["snet-pe"]
   private_connection_resource_id = dependency.key_vault.outputs.id
   subresource_names              = ["vault"]

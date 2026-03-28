@@ -27,8 +27,8 @@ inputs = {
   peering_name_2_to_1        = "peer-${local.env_vars.locals.secondary_short}-to-${local.env_vars.locals.primary_short}"
   vnet_1_id                  = dependency.networking.outputs.vnet_id
   vnet_1_name                = dependency.networking.outputs.vnet_name
-  vnet_1_resource_group_name = "rg-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
+  vnet_1_resource_group_name = dependency.networking.outputs.resource_group_name
   vnet_2_id                  = dependency.networking_secondary.outputs.vnet_id
   vnet_2_name                = dependency.networking_secondary.outputs.vnet_name
-  vnet_2_resource_group_name = "rg-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
+  vnet_2_resource_group_name = dependency.networking_secondary.outputs.resource_group_name
 }
