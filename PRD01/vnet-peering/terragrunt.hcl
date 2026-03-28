@@ -19,6 +19,13 @@ dependency "networking" {
 
 dependency "networking_secondary" {
   config_path = "../networking-secondary"
+
+  mock_outputs = {
+    vnet_id             = "mock-secondary-vnet-id"
+    vnet_name           = "mock-secondary-vnet"
+    resource_group_name = "mock-secondary-rg"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 inputs = {
