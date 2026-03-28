@@ -33,5 +33,5 @@ inputs = {
   sku_capacity               = local.env_vars.locals.apim_sku_capacity
   subnet_id                  = dependency.networking.outputs.subnet_ids["snet-apim"]
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
-  additional_locations       = [] # No secondary region in DEV
+  additional_locations       = [] # Sprint 5: wire secondary region via networking-secondary
 }
