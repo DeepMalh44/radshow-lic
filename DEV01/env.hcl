@@ -17,8 +17,8 @@ locals {
 
   # SKU sizing (smaller for dev)
   apim_sku_capacity     = 1
-  app_service_sku       = "P1v3"
-  function_app_sku      = "EP1"
+  app_service_sku       = "S1"
+  function_app_sku      = "S1"
   redis_capacity        = 1
   sql_mi_vcores         = 4
   sql_mi_storage_gb     = 32

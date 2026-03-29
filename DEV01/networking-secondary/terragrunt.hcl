@@ -15,6 +15,13 @@ locals {
 
 dependency "resource_group_secondary" {
   config_path = "../resource-group-secondary"
+
+
+  mock_outputs = {
+    name     = "mock-rg-secondary"
+    location = "northcentralus"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 inputs = {

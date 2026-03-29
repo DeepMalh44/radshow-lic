@@ -3,7 +3,7 @@
 # .NET 8 Linux, staging slot for blue-green
 # -----------------------------------------------------
 terraform {
-  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/app-service?ref=${include.root.locals.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
+  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/app-service?ref=${local.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
 }
 
 locals {

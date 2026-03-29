@@ -3,7 +3,7 @@
 # Shared module configuration inherited by all environments
 # -----------------------------------------------------
 terraform {
-  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/resource-group?ref=${include.root.locals.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
+  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/resource-group?ref=${local.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
 }
 
 locals {

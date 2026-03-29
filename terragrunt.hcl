@@ -40,8 +40,9 @@ generate "provider" {
           prevent_deletion_if_contains_resources = true
         }
       }
-      subscription_id = "${local.subscription_id}"
-      tenant_id       = "${local.tenant_id}"
+      subscription_id        = "${local.subscription_id}"
+      tenant_id              = "${local.tenant_id}"
+      storage_use_azuread    = true
     }
 
     provider "azapi" {
@@ -65,6 +66,7 @@ remote_state {
     key                  = "${path_relative_to_include()}/terraform.tfstate"
     subscription_id      = local.subscription_id
     tenant_id            = local.tenant_id
+    use_azuread_auth     = true
   }
 }
 

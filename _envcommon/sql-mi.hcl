@@ -3,7 +3,7 @@
 # GP_Gen5, failover group with 5-min grace period
 # -----------------------------------------------------
 terraform {
-  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/sql-mi?ref=${include.root.locals.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
+  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/sql-mi?ref=${local.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
 }
 
 locals {

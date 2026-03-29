@@ -3,7 +3,7 @@
 # Premium Classic, multi-region with gateway in secondary
 # -----------------------------------------------------
 terraform {
-  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/apim?ref=${include.root.locals.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
+  source = "git::https://github.com/DeepMalh44/radshow-def.git//modules/apim?ref=${local.env_vars.locals.environment == "PRD01" ? "v1.0.0" : "main"}"
 }
 
 locals {

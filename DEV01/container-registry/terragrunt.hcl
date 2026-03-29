@@ -14,10 +14,20 @@ locals {
 
 dependency "resource_group" {
   config_path = "../resource-group"
+
+  mock_outputs = { name = "mock-rg", location = "southcentralus" }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 dependency "monitoring" {
   config_path = "../monitoring"
+
+
+  mock_outputs = {
+    log_analytics_workspace_id    = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.OperationalInsights/workspaces/mock-la"
+    app_insights_connection_string = "InstrumentationKey=00000000-0000-0000-0000-000000000000"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 inputs = {

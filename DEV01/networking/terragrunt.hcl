@@ -14,13 +14,16 @@ locals {
 
 dependency "resource_group" {
   config_path = "../resource-group"
+
+  mock_outputs = { name = "mock-rg", location = "southcentralus" }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 dependency "networking_secondary" {
   config_path = "../networking-secondary"
 
   mock_outputs = {
-    vnet_id = "mock-secondary-vnet-id"
+    vnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg-secondary/providers/Microsoft.Network/virtualNetworks/mock-vnet-secondary"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
   skip_outputs = !fileexists("${get_terragrunt_dir()}/../networking-secondary/terragrunt.hcl")
