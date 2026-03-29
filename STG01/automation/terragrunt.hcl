@@ -25,5 +25,6 @@ inputs = {
   resource_group_name        = dependency.resource_group.outputs.name
   location                   = dependency.resource_group.outputs.location
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
-  runbooks                   = {} # DR runbooks added in Phase 5
+  enable_dr_runbooks         = true
+  runbooks                   = {}
 }
