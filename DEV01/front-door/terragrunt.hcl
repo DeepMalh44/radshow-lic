@@ -16,7 +16,7 @@ locals {
 dependency "resource_group" {
   config_path = "../resource-group"
 
-  mock_outputs = { name = "mock-rg", location = "southcentralus" }
+  mock_outputs = { name = "mock-rg", location = "swedencentral" }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
@@ -24,7 +24,7 @@ dependency "function_app" {
   config_path = "../function-app"
 
   mock_outputs = {
-    default_hostname = "func-radshow-dev01-scus.azurewebsites.net"
+    default_hostname = "func-radshow-dev01-swc.azurewebsites.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }

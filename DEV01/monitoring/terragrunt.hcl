@@ -18,7 +18,7 @@ dependency "resource_group" {
 
   mock_outputs = {
     name     = "mock-rg"
-    location = "southcentralus"
+    location = "swedencentral"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
