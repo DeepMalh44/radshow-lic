@@ -12,7 +12,7 @@ locals {
 
 inputs = {
   sku_name             = "Premium"
-  virtual_network_type = "Internal"
+  virtual_network_type = "External"
   enable_http2         = true
   sign_up_enabled      = false
   enable_diagnostics   = true

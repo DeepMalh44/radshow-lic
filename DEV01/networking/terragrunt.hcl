@@ -39,6 +39,7 @@ inputs = {
   subnets = {
     "snet-apim" = {
       address_prefixes  = ["10.1.1.0/24"]
+      is_apim_subnet    = true
       service_endpoints = ["Microsoft.Web"]
     }
     "snet-app" = {
