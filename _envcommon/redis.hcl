@@ -13,9 +13,9 @@ locals {
 inputs = {
   family               = "P"
   sku_name             = "Premium"
-  enable_non_ssl_port  = false
+  non_ssl_port_enabled = false
   minimum_tls_version  = "1.2"
-  replicas_per_master  = 1
+  replicas_per_primary = 1
   enable_diagnostics   = true
 
   redis_configuration = {
