@@ -18,5 +18,10 @@ inputs = {
   health_check_path                       = "/api/healthz"
   identity_type                           = "SystemAssigned"
   container_registry_use_managed_identity = true
+  vnet_route_all_enabled                  = true
   enable_diagnostics                      = true
+
+  app_settings = {
+    "AZURE_REGION" = local.env_vars.locals.primary_location
+  }
 }

@@ -11,14 +11,16 @@ locals {
 }
 
 inputs = {
-  family               = "P"
-  sku_name             = "Premium"
-  non_ssl_port_enabled = false
-  minimum_tls_version  = "1.2"
-  replicas_per_primary = 1
-  enable_diagnostics   = true
+  family                        = "P"
+  sku_name                      = "Premium"
+  non_ssl_port_enabled          = false
+  minimum_tls_version           = "1.2"
+  replicas_per_primary          = 1
+  public_network_access_enabled = true
+  enable_diagnostics            = true
 
   redis_configuration = {
-    maxmemory_policy = "volatile-lru"
+    maxmemory_policy                       = "volatile-lru"
+    active_directory_authentication_enabled = false
   }
 }

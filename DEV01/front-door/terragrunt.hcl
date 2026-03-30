@@ -20,11 +20,11 @@ dependency "resource_group" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "function_app" {
-  config_path = "../function-app"
+dependency "apim" {
+  config_path = "../apim"
 
   mock_outputs = {
-    default_hostname = "func-radshow-dev01-swc.azurewebsites.net"
+    gateway_url = "https://apim-radshow-dev01.azure-api.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -80,12 +80,12 @@ inputs = {
   }
 
   origins = {
-    "func-primary" = {
+    "apim-primary" = {
       origin_group_key               = "og-api"
       enabled                        = true
       certificate_name_check_enabled = true
-      host_name                      = dependency.function_app.outputs.default_hostname
-      origin_host_header             = dependency.function_app.outputs.default_hostname
+      host_name                      = replace(dependency.apim.outputs.gateway_url, "https://", "")
+      origin_host_header             = replace(dependency.apim.outputs.gateway_url, "https://", "")
       http_port                      = 80
       https_port                     = 443
       priority                       = 1
@@ -108,7 +108,7 @@ inputs = {
     "route-api" = {
       endpoint_key           = "ep-spa"
       origin_group_key       = "og-api"
-      origin_keys            = ["func-primary"]
+      origin_keys            = ["apim-primary"]
       enabled                = true
       forwarding_protocol    = "HttpsOnly"
       https_redirect_enabled = true
