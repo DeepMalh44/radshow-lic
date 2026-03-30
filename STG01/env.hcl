@@ -3,8 +3,8 @@
 # -----------------------------------------------------
 locals {
   environment     = "STG01"
-  subscription_id = "REPLACE_WITH_STG_SUBSCRIPTION_ID"
-  tenant_id       = "REPLACE_WITH_TENANT_ID"
+  subscription_id = "b8383a80-7a39-472f-89b8-4f0b6a53b266"
+  tenant_id       = "6021aa37-5a44-450a-8854-f08245985be2"
 
   # Region configuration
   primary_location   = "southcentralus"
