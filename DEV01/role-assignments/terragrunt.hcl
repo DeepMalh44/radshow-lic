@@ -49,6 +49,15 @@ dependency "storage" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "container_registry" {
+  config_path = "../container-registry"
+
+  mock_outputs = {
+    id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.ContainerRegistry/registries/mockacr"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   role_assignments = {
     # App Service → Key Vault Secrets User (read secrets via MI)
@@ -81,6 +90,14 @@ inputs = {
       role_definition_name = "Storage Blob Data Contributor"
       principal_id         = dependency.function_app.outputs.identity_principal_id
       description          = "Function App MI accesses Storage blobs (app-level)"
+    }
+
+    # Function App → AcrPull (pull container images from ACR via MI)
+    "func-acr-pull" = {
+      scope                = dependency.container_registry.outputs.id
+      role_definition_name = "AcrPull"
+      principal_id         = dependency.function_app.outputs.identity_principal_id
+      description          = "Function App MI pulls container images from ACR"
     }
   }
 }

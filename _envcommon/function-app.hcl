@@ -11,11 +11,12 @@ locals {
 }
 
 inputs = {
-  os_type                      = "Linux"
-  dotnet_version               = "8.0"
-  use_dotnet_isolated_runtime  = true
-  always_on                    = true
-  health_check_path            = "/api/healthz"
-  identity_type                = "SystemAssigned"
-  enable_diagnostics           = true
+  os_type                                 = "Linux"
+  dotnet_version                          = "8.0"
+  use_dotnet_isolated_runtime             = true
+  always_on                               = true
+  health_check_path                       = "/api/healthz"
+  identity_type                           = "SystemAssigned"
+  container_registry_use_managed_identity = true
+  enable_diagnostics                      = true
 }
