@@ -59,8 +59,8 @@ inputs = {
   waf_policy_name     = "wafafd${replace(local.env_vars.locals.name_prefix, "-", "")}"
 
   # ── Endpoints ──
+  # Single endpoint — SPA + API routes colocated so relative /api/* calls work
   endpoints = {
-    "ep-api" = { enabled = true }
     "ep-spa" = { enabled = true }
   }
 
@@ -147,7 +147,7 @@ inputs = {
   # ── Routes ──
   routes = {
     "route-api" = {
-      endpoint_key           = "ep-api"
+      endpoint_key           = "ep-spa"
       origin_group_key       = "og-api"
       origin_keys            = ["func-primary", "func-secondary"]
       enabled                = true

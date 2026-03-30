@@ -43,8 +43,8 @@ inputs = {
   resource_group_name = dependency.resource_group.outputs.name
   waf_policy_name     = "wafafd${replace(local.env_vars.locals.name_prefix, "-", "")}"
 
+  # Single endpoint — SPA + API routes colocated so relative /api/* calls work
   endpoints = {
-    "ep-api" = { enabled = true }
     "ep-spa" = { enabled = true }
   }
 
@@ -106,7 +106,7 @@ inputs = {
 
   routes = {
     "route-api" = {
-      endpoint_key           = "ep-api"
+      endpoint_key           = "ep-spa"
       origin_group_key       = "og-api"
       origin_keys            = ["func-primary"]
       enabled                = true
