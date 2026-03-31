@@ -36,16 +36,18 @@ dependency "sql_mi_secondary" {
 }
 
 inputs = {
-  name                         = "sqlmi-${local.env_vars.locals.name_prefix}"
-  resource_group_name          = dependency.resource_group.outputs.name
-  location                     = dependency.resource_group.outputs.location
-  subnet_id                    = dependency.networking.outputs.subnet_ids["snet-sqlmi"]
-  administrator_login          = "sqladmin"
-  administrator_login_password = "REPLACE_VIA_CI_CD_SECRET"
-  vcores                       = local.env_vars.locals.sql_mi_vcores
-  storage_size_in_gb           = local.env_vars.locals.sql_mi_storage_gb
-  log_analytics_workspace_id   = dependency.monitoring.outputs.log_analytics_workspace_id
-  enable_failover_group        = local.env_vars.locals.enable_dr
-  failover_group_name          = "fog-${local.env_vars.locals.name_prefix}"
-  secondary_instance_id        = dependency.sql_mi_secondary.outputs.id
+  name                       = "sqlmi-${local.env_vars.locals.name_prefix}"
+  resource_group_name        = dependency.resource_group.outputs.name
+  location                   = dependency.resource_group.outputs.location
+  subnet_id                  = dependency.networking.outputs.subnet_ids["snet-sqlmi"]
+  entra_only_auth            = true
+  entra_admin_login          = "admin@MngEnvMCAP245137.onmicrosoft.com"
+  entra_admin_object_id      = "941f59fd-aeb5-4ba2-9fb9-2f5132d15500"
+  entra_admin_tenant_id      = local.env_vars.locals.tenant_id
+  vcores                     = local.env_vars.locals.sql_mi_vcores
+  storage_size_in_gb         = local.env_vars.locals.sql_mi_storage_gb
+  log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
+  enable_failover_group      = local.env_vars.locals.enable_dr
+  failover_group_name        = "fog-${local.env_vars.locals.name_prefix}"
+  secondary_instance_id      = dependency.sql_mi_secondary.outputs.id
 }

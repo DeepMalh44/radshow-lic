@@ -43,6 +43,7 @@ inputs = {
   publisher_name             = "RAD Showcase"
   publisher_email            = "radshow-dev@contoso.com"
   sku_capacity               = local.env_vars.locals.apim_sku_capacity
+  zones                      = []  # Capacity < 3, zones not supported
   subnet_id                  = dependency.networking.outputs.subnet_ids["snet-apim"]
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
 

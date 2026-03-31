@@ -22,7 +22,7 @@ dependency "apim" {
 
   mock_outputs = {
     gateway_url          = "https://apim-radshow-stg01.azure-api.net"
-    gateway_regional_url = "https://apim-radshow-stg01-scus-01.regional.azure-api.net"
+    gateway_regional_url = "https://apim-radshow-stg01-swc-01.regional.azure-api.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -31,7 +31,7 @@ dependency "storage" {
   config_path = "../storage"
 
   mock_outputs = {
-    primary_web_host = "stradshowstg01scus.z21.web.core.windows.net"
+    primary_web_host = "stradshowstg01swc.z21.web.core.windows.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -40,7 +40,7 @@ dependency "storage_secondary" {
   config_path = "../storage-secondary"
 
   mock_outputs = {
-    primary_web_host = "stradshowstg01ncus.z21.web.core.windows.net"
+    primary_web_host = "stradshowstg01gwc.z21.web.core.windows.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
