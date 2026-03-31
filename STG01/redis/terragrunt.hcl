@@ -36,7 +36,7 @@ dependency "redis_secondary" {
 }
 
 inputs = {
-  name                       = "redis-${local.env_vars.locals.name_prefix}"
+  name                       = "redis-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name        = dependency.resource_group.outputs.name
   location                   = dependency.resource_group.outputs.location
   capacity                   = local.env_vars.locals.redis_capacity

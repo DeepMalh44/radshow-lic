@@ -38,7 +38,7 @@ dependency "monitoring" {
 }
 
 inputs = {
-  name                       = "apim-${local.env_vars.locals.name_prefix}"
+  name                       = "apim-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name        = dependency.resource_group.outputs.name
   location                   = dependency.resource_group.outputs.location
   publisher_name             = "RAD Showcase"

@@ -38,7 +38,7 @@ dependency "monitoring" {
 }
 
 inputs = {
-  environment_name       = "cae-${local.env_vars.locals.name_prefix}"
+  environment_name       = "cae-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name    = dependency.resource_group.outputs.name
   location               = dependency.resource_group.outputs.location
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id

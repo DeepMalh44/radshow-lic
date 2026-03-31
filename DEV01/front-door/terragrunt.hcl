@@ -24,7 +24,7 @@ dependency "apim" {
   config_path = "../apim"
 
   mock_outputs = {
-    gateway_url = "https://apim-radshow-dev01.azure-api.net"
+    gateway_url = "https://apim-radshow-dev01-swc.azure-api.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -33,7 +33,7 @@ dependency "storage" {
   config_path = "../storage"
 
   mock_outputs = {
-    primary_web_host = "stradshowdev01scus.z21.web.core.windows.net"
+    primary_web_host = "stradshowdev01swc.z21.web.core.windows.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
