@@ -38,6 +38,10 @@ jobs:
       matrix:
         environment: ${{ fromJson(needs.detect-changes.outputs.environments) }}
       fail-fast: false
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +49,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
 
       - name: Setup Terragrunt
         run: |
@@ -61,10 +66,6 @@ jobs:
 
       - name: Terragrunt Plan
         working-directory: ${{ matrix.environment }}
-        env:
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
         run: terragrunt run-all plan --terragrunt-non-interactive -out=tfplan 2>&1 | tee plan-output.txt
 
       - name: Comment PR with Plan
