@@ -65,11 +65,7 @@ remote_state {
     storage_account_name = "stradshwtfstate"
     container_name       = "tfstate"
     key                  = "${path_relative_to_include()}/terraform.tfstate"
-    subscription_id      = local.subscription_id
-    tenant_id            = local.tenant_id
-    client_id            = get_env("ARM_CLIENT_ID", "")
-    use_azuread_auth     = true
-    use_oidc             = true
+    access_key           = get_env("ARM_ACCESS_KEY", "")
   }
 }
 
