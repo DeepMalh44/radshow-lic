@@ -43,6 +43,7 @@ generate "provider" {
       subscription_id        = "${local.subscription_id}"
       tenant_id              = "${local.tenant_id}"
       storage_use_azuread    = true
+      use_oidc               = true
     }
 
     provider "azapi" {
@@ -67,6 +68,7 @@ remote_state {
     subscription_id      = local.subscription_id
     tenant_id            = local.tenant_id
     use_azuread_auth     = true
+    use_oidc             = true
   }
 }
 
