@@ -21,7 +21,7 @@ dependency "apim" {
   config_path = "../apim"
 
   mock_outputs = {
-    gateway_url          = "https://apim-radshow-prd01.azure-api.net"
+    gateway_url          = "https://apim-radshow-prd01-scus.azure-api.net"
     gateway_regional_url = "https://apim-radshow-prd01-scus-01.regional.azure-api.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
