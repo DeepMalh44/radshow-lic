@@ -43,31 +43,36 @@ generate "provider" {
       subscription_id        = "${local.subscription_id}"
       tenant_id              = "${local.tenant_id}"
       storage_use_azuread    = true
+      use_oidc               = true
     }
 
     provider "azapi" {
       tenant_id       = "${local.tenant_id}"
       subscription_id = "${local.subscription_id}"
+      use_oidc        = true
     }
   EOF
 }
 
-# Configure remote state in Azure Storage
-remote_state {
-  backend = "azurerm"
-  generate = {
-    path      = "backend.tf"
-    if_exists = "overwrite_terragrunt"
-  }
-  config = {
-    resource_group_name  = "rg-radshow-tfstate"
-    storage_account_name = "stradshwtfstate"
-    container_name       = "tfstate"
-    key                  = "${path_relative_to_include()}/terraform.tfstate"
-    subscription_id      = local.subscription_id
-    tenant_id            = local.tenant_id
-    use_azuread_auth     = true
-  }
+# Generate backend configuration directly (bypasses Terragrunt's
+# remote_state auto-init checks which don't support OIDC auth)
+generate "backend" {
+  path      = "backend.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<-EOF
+    terraform {
+      backend "azurerm" {
+        resource_group_name  = "rg-radshow-tfstate"
+        storage_account_name = "stradshwtfstate"
+        container_name       = "tfstate"
+        key                  = "${path_relative_to_include()}/terraform.tfstate"
+        subscription_id      = "${local.subscription_id}"
+        tenant_id            = "${local.tenant_id}"
+        use_azuread_auth     = true
+        use_oidc             = true
+      }
+    }
+  EOF
 }
 
 # Common inputs passed to all modules
