@@ -47,7 +47,7 @@ inputs = {
   vcores                     = local.env_vars.locals.sql_mi_vcores
   storage_size_in_gb         = local.env_vars.locals.sql_mi_storage_gb
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
-  enable_failover_group      = local.env_vars.locals.enable_dr
+  enable_failover_group      = false  # Disabled until GWC SQL MI quota is approved
   failover_group_name        = "fog-${local.env_vars.locals.name_prefix}"
   secondary_instance_id      = dependency.sql_mi_secondary.outputs.id
 }

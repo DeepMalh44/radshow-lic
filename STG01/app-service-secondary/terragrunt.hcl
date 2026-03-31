@@ -30,7 +30,7 @@ inputs = {
   resource_group_name           = dependency.resource_group_secondary.outputs.name
   location                      = local.env_vars.locals.secondary_location
   service_plan_name             = "asp-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
-  service_plan_sku_name         = local.env_vars.locals.app_service_sku
+  service_plan_sku_name         = "B1"  # GWC has 0 Standard VM quota; Basic tier uses separate pool
   vnet_integration_subnet_id    = dependency.networking_secondary.outputs.subnet_ids["snet-app"]
   log_analytics_workspace_id    = dependency.monitoring.outputs.log_analytics_workspace_id
 
