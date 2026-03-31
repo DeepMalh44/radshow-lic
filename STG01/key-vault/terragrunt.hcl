@@ -21,7 +21,7 @@ dependency "monitoring" {
 }
 
 inputs = {
-  name                       = "kv-${local.env_vars.locals.name_prefix}"
+  name                       = "kv-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name        = dependency.resource_group.outputs.name
   location                   = dependency.resource_group.outputs.location
   tenant_id                  = local.env_vars.locals.tenant_id
