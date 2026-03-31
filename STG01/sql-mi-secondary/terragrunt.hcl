@@ -1,10 +1,5 @@
 # STG01 / sql-mi-secondary
 # Secondary region SQL Managed Instance for failover group
-# SKIPPED: GWC has 0 SQL MI vCore quota — request increase at aka.ms/sql-mi-obtain-larger-quota
-# Uncomment skip = false after quota is approved
-
-skip = true
-
 include "root" {
   path = find_in_parent_folders()
 }
