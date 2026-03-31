@@ -43,7 +43,6 @@ generate "provider" {
       subscription_id        = "${local.subscription_id}"
       tenant_id              = "${local.tenant_id}"
       storage_use_azuread    = true
-      use_oidc               = true
     }
 
     provider "azapi" {
@@ -67,11 +66,7 @@ remote_state {
     key                  = "${path_relative_to_include()}/terraform.tfstate"
     subscription_id      = local.subscription_id
     tenant_id            = local.tenant_id
-    client_id            = get_env("ARM_CLIENT_ID", "")
     use_azuread_auth     = true
-    use_oidc             = true
-    oidc_request_url     = get_env("ACTIONS_ID_TOKEN_REQUEST_URL", "")
-    oidc_request_token   = get_env("ACTIONS_ID_TOKEN_REQUEST_TOKEN", "")
   }
 }
 
