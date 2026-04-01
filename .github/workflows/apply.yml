@@ -1,11 +1,6 @@
 name: Terragrunt Apply
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '**/*.hcl'
-      - '**/*.tf'
   workflow_dispatch:
     inputs:
       environment:
