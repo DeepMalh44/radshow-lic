@@ -72,7 +72,7 @@ inputs = {
   application_insights_connection_string = dependency.monitoring.outputs.secondary_app_insights_connection_string
 
   app_settings = {
-    "SqlConnection"           = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshowdb;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+    "SqlConnection"           = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     "KeyVault__VaultUri"      = dependency.key_vault_secondary.outputs.vault_uri
     "Storage__AccountName"    = dependency.storage_secondary.outputs.name
     "Storage__BlobEndpoint"   = dependency.storage_secondary.outputs.primary_blob_endpoint

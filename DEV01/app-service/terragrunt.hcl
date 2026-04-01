@@ -97,7 +97,7 @@ inputs = {
   connection_strings = {
     "DefaultConnection" = {
       type  = "SQLAzure"
-      value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshowdb;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+      value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     }
   }
 }
