@@ -7,10 +7,10 @@ locals {
   tenant_id       = "6021aa37-5a44-450a-8854-f08245985be2"
 
   # Region configuration
-  primary_location   = "swedencentral"
-  secondary_location = "germanywestcentral"
-  primary_short      = "swc"
-  secondary_short    = "gwc"
+  primary_location   = "centralindia"
+  secondary_location = "southindia"
+  primary_short      = "cin"
+  secondary_short    = "sin"
 
   # Naming prefix
   name_prefix = "radshow-stg01"

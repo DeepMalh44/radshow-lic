@@ -25,4 +25,5 @@ inputs = {
   resource_group_name        = dependency.resource_group_secondary.outputs.name
   location                   = local.env_vars.locals.secondary_location
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
+  account_replication_type   = "GRS"  # South India has no AZ support; GRS instead of RAGZRS
 }
