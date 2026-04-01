@@ -13,7 +13,7 @@ locals {
 inputs = {
   sku                           = "Premium"
   admin_enabled                 = false
-  public_network_access_enabled = false
+  public_network_access_enabled = true
   identity_type                 = "SystemAssigned"
   enable_diagnostics            = true
 }
