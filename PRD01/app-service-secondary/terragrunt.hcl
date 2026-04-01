@@ -25,6 +25,45 @@ dependency "monitoring" {
   config_path = "../monitoring"
 }
 
+dependency "sql_mi" {
+  config_path = "../sql-mi"
+
+  mock_outputs = {
+    fqdn = "mock-sqlmi.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "redis_secondary" {
+  config_path = "../redis-secondary"
+
+  mock_outputs = {
+    hostname           = "mock-redis.redis.cache.windows.net"
+    ssl_port           = 6380
+    primary_access_key = "mockkey=="
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "key_vault" {
+  config_path = "../key-vault"
+
+  mock_outputs = {
+    vault_uri = "https://mock-kv.vault.azure.net/"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "storage_secondary" {
+  config_path = "../storage-secondary"
+
+  mock_outputs = {
+    name                  = "mockstorage"
+    primary_blob_endpoint = "https://mockstorage.blob.core.windows.net/"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "app-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name           = dependency.resource_group_secondary.outputs.name
@@ -36,5 +75,17 @@ inputs = {
 
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = dependency.monitoring.outputs.secondary_app_insights_connection_string
+    "ASPNETCORE_ENVIRONMENT"                = "Production"
+    "KeyVault__VaultUri"                    = dependency.key_vault.outputs.vault_uri
+    "Storage__AccountName"                  = dependency.storage_secondary.outputs.name
+    "Storage__BlobEndpoint"                 = dependency.storage_secondary.outputs.primary_blob_endpoint
+    "Redis__ConnectionString"               = "${dependency.redis_secondary.outputs.hostname}:${dependency.redis_secondary.outputs.ssl_port},password=${dependency.redis_secondary.outputs.primary_access_key},ssl=True,abortConnect=False"
+  }
+
+  connection_strings = {
+    "DefaultConnection" = {
+      type  = "SQLAzure"
+      value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+    }
   }
 }
