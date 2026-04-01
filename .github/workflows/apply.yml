@@ -53,4 +53,4 @@ jobs:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        run: terragrunt run-all apply --terragrunt-non-interactive -auto-approve
+        run: terragrunt run-all apply --terragrunt-source-update --terragrunt-non-interactive -auto-approve
