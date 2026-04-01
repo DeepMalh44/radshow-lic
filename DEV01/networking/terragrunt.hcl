@@ -36,6 +36,8 @@ inputs = {
   address_space       = ["10.1.0.0/16"]
   secondary_vnet_id   = dependency.networking_secondary.outputs.vnet_id
 
+  enable_sqlmi_public_endpoint = true
+
   subnets = {
     "snet-apim" = {
       address_prefixes  = ["10.1.1.0/24"]
