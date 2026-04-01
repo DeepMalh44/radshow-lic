@@ -1,5 +1,5 @@
 # STG01 / sql-mi-secondary
-# Secondary region SQL Managed Instance for failover group
+# Secondary region SQL Managed Instance — uses dnsZonePartner from primary
 include "root" {
   path = find_in_parent_folders()
 }
@@ -25,6 +25,17 @@ dependency "monitoring" {
   config_path = "../monitoring"
 }
 
+dependency "sql_mi_primary" {
+  config_path = "../sql-mi"
+
+  mock_outputs = {
+    id   = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.Sql/managedInstances/mock-sqlmi-primary"
+    name = "mock-sqlmi-primary"
+    fqdn = "mock-sqlmi-primary.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                       = "sqlmi-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name        = dependency.resource_group_secondary.outputs.name
@@ -37,7 +48,8 @@ inputs = {
   vcores                     = local.env_vars.locals.sql_mi_vcores
   storage_size_in_gb         = local.env_vars.locals.sql_mi_storage_gb
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
+  dns_zone_partner_id        = dependency.sql_mi_primary.outputs.id
 
-  # Failover group is created by the PRIMARY instance, not the secondary
+  # Failover group is created by sql-mi-fog, not here
   enable_failover_group = false
 }
