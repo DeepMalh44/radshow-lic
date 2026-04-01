@@ -19,6 +19,6 @@ inputs = {
   public_data_endpoint_enabled = false
   proxy_override              = "Redirect"
   identity_type               = "SystemAssigned"
-  failover_grace_minutes      = 5  # Tier 1: RPO ≤ 5 min
+  failover_grace_minutes      = 60  # Azure minimum is 60 min
   enable_diagnostics          = true
 }
