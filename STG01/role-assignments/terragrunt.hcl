@@ -179,5 +179,23 @@ inputs = {
       principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
       description          = "Function App Secondary MI pulls container images from ACR"
     }
+
+    # --- CI/CD Service Principal → Storage (SPA deploy) ---
+
+    # SP → Primary Storage Blob Data Contributor (SPA upload)
+    "cicd-sp-storage-blob" = {
+      scope                = dependency.storage.outputs.id
+      role_definition_name = "Storage Blob Data Contributor"
+      principal_id         = "6952ac03-12b8-4bd2-8697-9b624583b14f"
+      description          = "CI/CD SP uploads SPA to primary Storage $web"
+    }
+
+    # SP → Secondary Storage Blob Data Contributor (SPA upload)
+    "cicd-sp-storage-blob-sec" = {
+      scope                = dependency.storage_secondary.outputs.id
+      role_definition_name = "Storage Blob Data Contributor"
+      principal_id         = "6952ac03-12b8-4bd2-8697-9b624583b14f"
+      description          = "CI/CD SP uploads SPA to secondary Storage $web"
+    }
   }
 }
