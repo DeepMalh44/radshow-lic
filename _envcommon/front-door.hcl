@@ -12,7 +12,7 @@ locals {
 
 inputs = {
   sku_name                 = "Premium_AzureFrontDoor"
-  response_timeout_seconds = 60
+  response_timeout_seconds = 240  # Supports DR failover operations (FD origin updates ~120s)
   enable_waf               = local.env_vars.locals.enable_waf
   waf_mode                 = "Prevention"
 

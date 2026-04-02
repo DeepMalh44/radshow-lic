@@ -94,6 +94,33 @@ dependency "container_registry" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "resource_group" {
+  config_path = "../resource-group"
+
+  mock_outputs = {
+    id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "resource_group_secondary" {
+  config_path = "../resource-group-secondary"
+
+  mock_outputs = {
+    id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg-sec"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "front_door" {
+  config_path = "../front-door"
+
+  mock_outputs = {
+    profile_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/mock-rg/providers/Microsoft.Cdn/profiles/mock-afd"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   role_assignments = {
     # --- Primary Region ---
@@ -114,12 +141,36 @@ inputs = {
       description          = "App Service MI accesses Storage blobs"
     }
 
-    # Function App → Key Vault Secrets User
+    # Function App → Key Vault Secrets Officer (reads + writes for failover active-region)
     "func-kv-secrets" = {
       scope                = dependency.key_vault.outputs.id
-      role_definition_name = "Key Vault Secrets User"
+      role_definition_name = "Key Vault Secrets Officer"
       principal_id         = dependency.function_app.outputs.identity_principal_id
-      description          = "Function App MI reads Key Vault secrets"
+      description          = "Function App MI reads/writes Key Vault secrets (failover active-region)"
+    }
+
+    # Function App → SQL MI Contributor on primary RG (failover group management)
+    "func-sqlmi-contributor-primary" = {
+      scope                = dependency.resource_group.outputs.id
+      role_definition_name = "SQL Managed Instance Contributor"
+      principal_id         = dependency.function_app.outputs.identity_principal_id
+      description          = "Function App MI manages SQL MI failover group in primary RG"
+    }
+
+    # Function App → SQL MI Contributor on secondary RG (failover group management)
+    "func-sqlmi-contributor-secondary" = {
+      scope                = dependency.resource_group_secondary.outputs.id
+      role_definition_name = "SQL Managed Instance Contributor"
+      principal_id         = dependency.function_app.outputs.identity_principal_id
+      description          = "Function App MI manages SQL MI failover group in secondary RG"
+    }
+
+    # Function App → CDN Profile Contributor (Front Door origin priority swap)
+    "func-cdn-contributor" = {
+      scope                = dependency.front_door.outputs.profile_id
+      role_definition_name = "CDN Profile Contributor"
+      principal_id         = dependency.function_app.outputs.identity_principal_id
+      description          = "Function App MI swaps Front Door origin priorities during failover"
     }
 
     # Function App → Storage Blob Data Contributor
@@ -156,12 +207,36 @@ inputs = {
       description          = "App Service Secondary MI accesses Storage blobs"
     }
 
-    # Function App Secondary → Key Vault Secondary Secrets User
+    # Function App Secondary → Key Vault Secondary Secrets Officer (reads + writes for failover)
     "func-sec-kv-secrets" = {
       scope                = dependency.key_vault_secondary.outputs.id
-      role_definition_name = "Key Vault Secrets User"
+      role_definition_name = "Key Vault Secrets Officer"
       principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
-      description          = "Function App Secondary MI reads Key Vault secrets"
+      description          = "Function App Secondary MI reads/writes Key Vault secrets (failover active-region)"
+    }
+
+    # Function App Secondary → SQL MI Contributor on primary RG (failover group management)
+    "func-sec-sqlmi-contributor-primary" = {
+      scope                = dependency.resource_group.outputs.id
+      role_definition_name = "SQL Managed Instance Contributor"
+      principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
+      description          = "Function App Secondary MI manages SQL MI failover group in primary RG"
+    }
+
+    # Function App Secondary → SQL MI Contributor on secondary RG (failover group management)
+    "func-sec-sqlmi-contributor-secondary" = {
+      scope                = dependency.resource_group_secondary.outputs.id
+      role_definition_name = "SQL Managed Instance Contributor"
+      principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
+      description          = "Function App Secondary MI manages SQL MI failover group in secondary RG"
+    }
+
+    # Function App Secondary → CDN Profile Contributor (Front Door origin priority swap)
+    "func-sec-cdn-contributor" = {
+      scope                = dependency.front_door.outputs.profile_id
+      role_definition_name = "CDN Profile Contributor"
+      principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
+      description          = "Function App Secondary MI swaps Front Door origin priorities during failover"
     }
 
     # Function App Secondary → Storage Secondary Blob Data Contributor
