@@ -181,6 +181,14 @@ inputs = {
       description          = "Function App MI accesses Storage blobs (app-level)"
     }
 
+    # Function App Primary → Key Vault Secondary Secrets Officer (dual KV write during failover)
+    "func-kv-secrets-peer" = {
+      scope                = dependency.key_vault_secondary.outputs.id
+      role_definition_name = "Key Vault Secrets Officer"
+      principal_id         = dependency.function_app.outputs.identity_principal_id
+      description          = "Function App MI writes active-region to peer KV during failover"
+    }
+
     # Function App → AcrPull (pull container images from ACR via MI)
     "func-acr-pull" = {
       scope                = dependency.container_registry.outputs.id
@@ -245,6 +253,14 @@ inputs = {
       role_definition_name = "Storage Blob Data Contributor"
       principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
       description          = "Function App Secondary MI accesses Storage blobs"
+    }
+
+    # Function App Secondary → Key Vault Primary Secrets Officer (dual KV write during failover)
+    "func-sec-kv-secrets-peer" = {
+      scope                = dependency.key_vault.outputs.id
+      role_definition_name = "Key Vault Secrets Officer"
+      principal_id         = dependency.function_app_secondary.outputs.identity_principal_id
+      description          = "Function App Secondary MI writes active-region to peer KV during failover"
     }
 
     # Function App Secondary → AcrPull (same ACR, geo-replicated)

@@ -77,6 +77,15 @@ dependency "key_vault_secondary" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "key_vault" {
+  config_path = "../key-vault"
+
+  mock_outputs = {
+    vault_uri = "https://mock-kv-pri.vault.azure.net/"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "func-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name           = dependency.resource_group_secondary.outputs.name
@@ -95,6 +104,7 @@ inputs = {
     "AZURE_REGION"               = local.env_vars.locals.secondary_location
     "SqlConnection"              = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     "KeyVault__VaultUri"         = dependency.key_vault_secondary.outputs.vault_uri
+    "KeyVault__PeerVaultUri"     = dependency.key_vault.outputs.vault_uri
     "Storage__AccountName"       = dependency.storage_secondary.outputs.name
     "Storage__BlobEndpoint"      = dependency.storage_secondary.outputs.primary_blob_endpoint
     "Redis__ConnectionString"    = "${dependency.redis_secondary.outputs.hostname}:${dependency.redis_secondary.outputs.ssl_port},password=${dependency.redis_secondary.outputs.primary_access_key},ssl=True,abortConnect=False"

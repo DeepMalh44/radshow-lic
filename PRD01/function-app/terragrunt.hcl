@@ -76,6 +76,15 @@ dependency "key_vault" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "key_vault_secondary" {
+  config_path = "../key-vault-secondary"
+
+  mock_outputs = {
+    vault_uri = "https://mock-kv-sec.vault.azure.net/"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "func-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name           = dependency.resource_group.outputs.name
@@ -93,6 +102,7 @@ inputs = {
   app_settings = {
     "SqlConnection"              = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     "KeyVault__VaultUri"         = dependency.key_vault.outputs.vault_uri
+    "KeyVault__PeerVaultUri"     = dependency.key_vault_secondary.outputs.vault_uri
     "Storage__AccountName"       = dependency.storage.outputs.name
     "Storage__BlobEndpoint"      = dependency.storage.outputs.primary_blob_endpoint
     "Redis__ConnectionString"    = "${dependency.redis.outputs.hostname}:${dependency.redis.outputs.ssl_port},password=${dependency.redis.outputs.primary_access_key},ssl=True,abortConnect=False"
