@@ -21,8 +21,9 @@ dependency "apim" {
   config_path = "../apim"
 
   mock_outputs = {
-    gateway_url          = "https://apim-radshow-stg01-cin.azure-api.net"
-    gateway_regional_url = "https://apim-radshow-stg01-cin-01.regional.azure-api.net"
+    gateway_url                    = "https://apim-radshow-stg01-cin.azure-api.net"
+    gateway_regional_url           = "https://apim-radshow-stg01-cin-01.regional.azure-api.net"
+    gateway_secondary_regional_url = "https://apim-radshow-stg01-cin-southindia-01.regional.azure-api.net"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -64,7 +65,7 @@ inputs = {
         interval_in_seconds = 30
         path                = "/api/healthz"
         protocol            = "Https"
-        request_type        = "HEAD"
+        request_type        = "GET"
       }
       load_balancing = {
         additional_latency_in_milliseconds = 0
@@ -78,7 +79,7 @@ inputs = {
         interval_in_seconds = 30
         path                = "/index.html"
         protocol            = "Https"
-        request_type        = "HEAD"
+        request_type        = "GET"
       }
       load_balancing = {
         additional_latency_in_milliseconds = 0
@@ -105,8 +106,8 @@ inputs = {
       origin_group_key               = "og-api"
       enabled                        = true
       certificate_name_check_enabled = true
-      host_name                      = replace(dependency.apim.outputs.gateway_regional_url, "https://", "")
-      origin_host_header             = replace(dependency.apim.outputs.gateway_regional_url, "https://", "")
+      host_name                      = replace(dependency.apim.outputs.gateway_secondary_regional_url, "https://", "")
+      origin_host_header             = replace(dependency.apim.outputs.gateway_secondary_regional_url, "https://", "")
       http_port                      = 80
       https_port                     = 443
       priority                       = 2

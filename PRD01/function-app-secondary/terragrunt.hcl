@@ -92,6 +92,7 @@ inputs = {
   application_insights_connection_string = dependency.monitoring.outputs.secondary_app_insights_connection_string
 
   app_settings = {
+    "AZURE_REGION"               = local.env_vars.locals.secondary_location
     "SqlConnection"              = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     "KeyVault__VaultUri"         = dependency.key_vault_secondary.outputs.vault_uri
     "Storage__AccountName"       = dependency.storage_secondary.outputs.name
