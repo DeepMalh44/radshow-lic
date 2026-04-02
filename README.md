@@ -25,7 +25,8 @@ radshow-lic/
 │   ├── key-vault.hcl
 │   ├── storage.hcl
 │   ├── monitoring.hcl
-│   └── automation.hcl
+│   ├─ automation.hcl
+│   └─ role-assignments.hcl
 ├── DEV01/                       # Development environment
 │   ├── env.hcl                  # Environment-specific variables
 │   └── {module}/terragrunt.hcl  # Per-module config
@@ -34,8 +35,8 @@ radshow-lic/
 │   └── {module}/terragrunt.hcl
 ├── PRD01/                       # Production environment
 │   ├── env.hcl
-│   └── {module}/terragrunt.hcl
-└── .github/workflows/           # CI/CD pipelines
+│   └── {module}/terragrunt.hcl├─ docs/                        # Operations documentation
+│   └─ DR-OPERATIONS-GUIDE.md└── .github/workflows/           # CI/CD pipelines
     ├── plan.yml
     └── apply.yml
 ```
@@ -43,9 +44,9 @@ radshow-lic/
 ## Environments
 | Environment | DR | WAF | Geo-Rep | Delete Lock | Regions |
 |---|---|---|---|---|---|
-| DEV01 | No | No | No | No | SCUS only |
-| STG01 | Yes | Yes | Yes | No | SCUS + NCUS |
-| PRD01 | Yes | Yes | Yes | Yes | SCUS + NCUS |
+| DEV01 | No | No | No | No | swedencentral |
+| STG01 | Yes | Yes | Yes | No | centralindia + southindia |
+| PRD01 | Yes | Yes | Yes | Yes | southcentralus + northcentralus |
 
 ## Quick Start
 ```bash
@@ -74,6 +75,15 @@ terragrunt run-all apply
 ## Configuration
 1. Update `subscription_id` and `tenant_id` in each `env.hcl`
 2. Create the tfstate storage account: `rg-radshow-tfstate` / `stradshwtfstate`
+
+## CI/CD Approval Gates
+All environments (DEV01, STG01, PRD01) require reviewer approval before deployment.
+Configured via GitHub Environment Protection Rules with **DeepMalh44** as required reviewer.
+Use `workflow_dispatch` to target a specific environment and skip others.
+
+## DR Operations
+For DR-enabled environments (STG01, PRD01), see [docs/DR-OPERATIONS-GUIDE.md](docs/DR-OPERATIONS-GUIDE.md)
+for failover procedures, required Key Vault secrets, RBAC roles, and troubleshooting.
 3. Run `terragrunt run-all init` in the target environment
 
 ## Module Dependencies (apply order)
