@@ -28,11 +28,30 @@ dependency "storage" {
   config_path = "../storage"
 }
 
+dependency "resource_group_secondary" {
+  config_path = "../resource-group-secondary"
+
+  mock_outputs = {
+    name = "mock-rg-sec"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "sql_mi" {
   config_path = "../sql-mi"
 
   mock_outputs = {
-    fqdn = "mock-sqlmi.database.windows.net"
+    fqdn                = "mock-sqlmi.database.windows.net"
+    failover_group_name = "mock-fog"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "front_door" {
+  config_path = "../front-door"
+
+  mock_outputs = {
+    profile_name = "mock-afd"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -71,10 +90,18 @@ inputs = {
   application_insights_connection_string = dependency.monitoring.outputs.app_insights_connection_string
 
   app_settings = {
-    "SqlConnection"           = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
-    "KeyVault__VaultUri"      = dependency.key_vault.outputs.vault_uri
-    "Storage__AccountName"    = dependency.storage.outputs.name
-    "Storage__BlobEndpoint"   = dependency.storage.outputs.primary_blob_endpoint
-    "Redis__ConnectionString" = "${dependency.redis.outputs.hostname}:${dependency.redis.outputs.ssl_port},password=${dependency.redis.outputs.primary_access_key},ssl=True,abortConnect=False"
+    "SqlConnection"              = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+    "KeyVault__VaultUri"         = dependency.key_vault.outputs.vault_uri
+    "Storage__AccountName"       = dependency.storage.outputs.name
+    "Storage__BlobEndpoint"      = dependency.storage.outputs.primary_blob_endpoint
+    "Redis__ConnectionString"    = "${dependency.redis.outputs.hostname}:${dependency.redis.outputs.ssl_port},password=${dependency.redis.outputs.primary_access_key},ssl=True,abortConnect=False"
+    "SUBSCRIPTION_ID"            = local.env_vars.locals.subscription_id
+    "RESOURCE_GROUP_PRIMARY"     = dependency.resource_group.outputs.name
+    "RESOURCE_GROUP_SECONDARY"   = dependency.resource_group_secondary.outputs.name
+    "SQL_MI_FOG_NAME"            = dependency.sql_mi.outputs.failover_group_name
+    "FRONT_DOOR_PROFILE_NAME"    = dependency.front_door.outputs.profile_name
+    "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa"
+    "PRIMARY_LOCATION"           = local.env_vars.locals.primary_location
+    "SECONDARY_LOCATION"         = local.env_vars.locals.secondary_location
   }
 }
