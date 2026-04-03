@@ -96,6 +96,15 @@ dependency "key_vault" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "apim" {
+  config_path = "../apim"
+
+  mock_outputs = {
+    gateway_url = "https://apim-radshow-stg01-cin.azure-api.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "func-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name           = dependency.resource_group_secondary.outputs.name
@@ -125,5 +134,6 @@ inputs = {
     "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa"
     "PRIMARY_LOCATION"           = local.env_vars.locals.primary_location
     "SECONDARY_LOCATION"         = local.env_vars.locals.secondary_location
+    "APIM_GATEWAY_URL"           = dependency.apim.outputs.gateway_url
   }
 }

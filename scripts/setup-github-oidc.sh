@@ -46,21 +46,27 @@ case "$ENVIRONMENT" in
     TENANT_ID="6021aa37-5a44-450a-8854-f08245985be2"
     NAME_PREFIX="radshow-dev01"
     PRIMARY_SHORT="swc"
+    SECONDARY_SHORT="gwc"
     RESOURCE_GROUP="rg-radshow-dev01-swc"
+    RESOURCE_GROUP_SECONDARY="rg-radshow-dev01-gwc"
     ;;
   STG01)
     SUBSCRIPTION_ID="${STG01_SUBSCRIPTION_ID:-$SUBSCRIPTION_ID}"
     TENANT_ID="${STG01_TENANT_ID:-$TENANT_ID}"
     NAME_PREFIX="radshow-stg01"
-    PRIMARY_SHORT="scus"
-    RESOURCE_GROUP="rg-radshow-stg01-scus"
+    PRIMARY_SHORT="cin"
+    SECONDARY_SHORT="sin"
+    RESOURCE_GROUP="rg-radshow-stg01-cin"
+    RESOURCE_GROUP_SECONDARY="rg-radshow-stg01-sin"
     ;;
   PRD01)
     SUBSCRIPTION_ID="${PRD01_SUBSCRIPTION_ID:-$SUBSCRIPTION_ID}"
     TENANT_ID="${PRD01_TENANT_ID:-$TENANT_ID}"
     NAME_PREFIX="radshow-prd01"
     PRIMARY_SHORT="scus"
+    SECONDARY_SHORT="ncus"
     RESOURCE_GROUP="rg-radshow-prd01-scus"
+    RESOURCE_GROUP_SECONDARY="rg-radshow-prd01-ncus"
     ;;
   *)
     echo "ERROR: Unknown environment '$ENVIRONMENT'"
@@ -70,8 +76,12 @@ esac
 
 # Derived names
 STORAGE_ACCOUNT="st$(echo "$NAME_PREFIX" | tr -d '-')${PRIMARY_SHORT}"
-ACR_NAME="acr$(echo "$NAME_PREFIX" | tr -d '-')"
-FUNC_APP_NAME="func-${NAME_PREFIX}"
+STORAGE_ACCOUNT_SECONDARY="st$(echo "$NAME_PREFIX" | tr -d '-')${SECONDARY_SHORT}"
+ACR_NAME="acr$(echo "$NAME_PREFIX" | tr -d '-')${PRIMARY_SHORT}"
+FUNC_APP_NAME="func-${NAME_PREFIX}-${PRIMARY_SHORT}"
+FUNC_APP_SECONDARY_NAME="func-${NAME_PREFIX}-${SECONDARY_SHORT}"
+APP_SERVICE_NAME="app-${NAME_PREFIX}-${PRIMARY_SHORT}"
+APP_SERVICE_SECONDARY_NAME="app-${NAME_PREFIX}-${SECONDARY_SHORT}"
 FRONT_DOOR_PROFILE="afd-${NAME_PREFIX}"
 FRONT_DOOR_ENDPOINT="ep-spa"
 APP_DISPLAY_NAME="sp-radshow-cicd-${ENVIRONMENT,,}"
@@ -127,13 +137,40 @@ az role assignment create \
   --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP" \
   --only-show-errors 2>/dev/null || echo "  Storage Blob Data Contributor already assigned"
 
+# Secondary resource group roles (for DR environments)
+if [[ -n "${RESOURCE_GROUP_SECONDARY:-}" ]]; then
+  echo "  Assigning roles on secondary RG: $RESOURCE_GROUP_SECONDARY"
+  az role assignment create \
+    --role "Contributor" \
+    --assignee-object-id "$SP_ID" \
+    --assignee-principal-type ServicePrincipal \
+    --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_SECONDARY" \
+    --only-show-errors 2>/dev/null || echo "  Contributor (secondary) already assigned"
+
+  az role assignment create \
+    --role "Storage Blob Data Contributor" \
+    --assignee-object-id "$SP_ID" \
+    --assignee-principal-type ServicePrincipal \
+    --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_SECONDARY" \
+    --only-show-errors 2>/dev/null || echo "  Storage Blob Data Contributor (secondary) already assigned"
+fi
+
+# Terraform state storage RBAC
+echo "  Assigning Storage Blob Data Contributor on tfstate storage..."
+az role assignment create \
+  --role "Storage Blob Data Contributor" \
+  --assignee-object-id "$SP_ID" \
+  --assignee-principal-type ServicePrincipal \
+  --scope "/subscriptions/$SUBSCRIPTION_ID/resourceGroups/rg-radshow-tfstate/providers/Microsoft.Storage/storageAccounts/stradshwtfstate" \
+  --only-show-errors 2>/dev/null || echo "  tfstate RBAC already assigned"
+
 echo "  Roles assigned"
 
 # ── Step 4: Create Federated Credentials for each repo ──────────────────────
 echo ""
 echo "▶ Step 4: Creating Federated Credentials"
 
-REPOS=("radshow-lic" "radshow-spa" "radshow-api" "radshow-apim")
+REPOS=("radshow-lic" "radshow-spa" "radshow-api" "radshow-apim" "radshow-db")
 
 for REPO in "${REPOS[@]}"; do
   CRED_NAME="gh-${REPO}-${ENVIRONMENT,,}"
@@ -190,6 +227,21 @@ set_secret "radshow-spa" "FRONT_DOOR_ENDPOINT_NAME" "$FRONT_DOOR_ENDPOINT"
 set_secret "radshow-api" "ACR_NAME" "$ACR_NAME"
 set_secret "radshow-api" "FUNC_APP_NAME" "$FUNC_APP_NAME"
 set_secret "radshow-api" "RESOURCE_GROUP" "$RESOURCE_GROUP"
+set_secret "radshow-api" "FUNC_APP_SECONDARY_NAME" "$FUNC_APP_SECONDARY_NAME"
+set_secret "radshow-api" "RESOURCE_GROUP_SECONDARY" "$RESOURCE_GROUP_SECONDARY"
+
+# radshow-spa (SPA deployment — secondary storage for DR)
+set_secret "radshow-spa" "STORAGE_ACCOUNT_SECONDARY_NAME" "$STORAGE_ACCOUNT_SECONDARY"
+
+# radshow-db (Database migrations)
+set_secret "radshow-db" "AZURE_CLIENT_ID" "$APP_ID"
+set_secret "radshow-db" "AZURE_TENANT_ID" "$TENANT_ID"
+set_secret "radshow-db" "AZURE_SUBSCRIPTION_ID" "$SUBSCRIPTION_ID"
+set_secret "radshow-db" "FUNC_APP_NAME" "$FUNC_APP_NAME"
+set_secret "radshow-db" "FUNC_APP_SECONDARY_NAME" "$FUNC_APP_SECONDARY_NAME"
+set_secret "radshow-db" "APP_SERVICE_NAME" "$APP_SERVICE_NAME"
+set_secret "radshow-db" "APP_SERVICE_SECONDARY_NAME" "$APP_SERVICE_SECONDARY_NAME"
+echo "  NOTE: radshow-db SQL_MI_FQDN and SQL_DATABASE_NAME must be set manually after SQL MI is provisioned"
 
 # radshow-apim (APIOps)
 set_secret "radshow-apim" "RESOURCE_GROUP" "$RESOURCE_GROUP"
