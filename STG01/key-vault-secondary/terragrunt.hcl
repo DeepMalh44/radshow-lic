@@ -27,8 +27,8 @@ inputs = {
   tenant_id                  = local.env_vars.locals.tenant_id
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
 
-  secrets = {
-    "active-region"    = local.env_vars.locals.primary_location
-    "failover-password" = "DR-Failover-${local.env_vars.locals.environment}!"
-  }
+  # NOTE: Secrets managed via CLI / DR automation, not terraform
+  # (KV has public_network_access=false + default_action=Deny;
+  #  terraform cannot reach KV data plane from outside the VNet)
+  secrets = {}
 }
