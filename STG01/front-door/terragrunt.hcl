@@ -61,7 +61,7 @@ inputs = {
   origin_groups = {
     "og-api" = {
       session_affinity_enabled = false
-      restore_traffic_time_to_healed_or_new_endpoints_in_minutes = 10
+      restore_traffic_time_to_healed_or_new_endpoint_in_minutes = 10
       health_probe = {
         interval_in_seconds = 30
         path                = "/api/healthz"
@@ -76,7 +76,7 @@ inputs = {
     }
     "og-spa" = {
       session_affinity_enabled = false
-      restore_traffic_time_to_healed_or_new_endpoints_in_minutes = 10
+      restore_traffic_time_to_healed_or_new_endpoint_in_minutes = 10
       health_probe = {
         interval_in_seconds = 30
         path                = "/index.html"

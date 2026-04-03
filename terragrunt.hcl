@@ -65,7 +65,7 @@ generate "backend" {
         resource_group_name  = "rg-radshow-tfstate"
         storage_account_name = "stradshwtfstate"
         container_name       = "tfstate"
-        key                  = "${path_relative_to_include()}/terraform.tfstate"
+        key                  = "${replace(path_relative_to_include(), "\\", "/")}/terraform.tfstate"
         subscription_id      = "${local.subscription_id}"
         tenant_id            = "${local.tenant_id}"
         use_azuread_auth     = true
