@@ -26,4 +26,9 @@ inputs = {
   location                   = local.env_vars.locals.secondary_location
   tenant_id                  = local.env_vars.locals.tenant_id
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
+
+  secrets = {
+    "active-region"    = local.env_vars.locals.primary_location
+    "failover-password" = "DR-Failover-${local.env_vars.locals.environment}!"
+  }
 }

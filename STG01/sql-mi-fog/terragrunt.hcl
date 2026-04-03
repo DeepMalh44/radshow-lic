@@ -30,4 +30,5 @@ inputs = {
   location              = dependency.resource_group.outputs.location
   primary_instance_id   = dependency.sql_mi_primary.outputs.id
   secondary_instance_id = dependency.sql_mi_secondary.outputs.id
+  primary_instance_fqdn = dependency.sql_mi_primary.outputs.fqdn
 }
