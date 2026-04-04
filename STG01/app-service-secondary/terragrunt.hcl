@@ -54,6 +54,15 @@ dependency "key_vault" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "apim" {
+  config_path = "../apim"
+
+  mock_outputs = {
+    gateway_url = "https://apim-radshow-stg01-cin.azure-api.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "storage_secondary" {
   config_path = "../storage-secondary"
 
@@ -76,6 +85,9 @@ inputs = {
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = dependency.monitoring.outputs.secondary_app_insights_connection_string
     "ASPNETCORE_ENVIRONMENT"                = "Staging"
+    "ASPNETCORE_PATHBASE"                   = "/app"
+    "APIM_GATEWAY_URL"                      = dependency.apim.outputs.gateway_url
+    "AZURE_REGION"                          = local.env_vars.locals.secondary_location
     "KeyVault__VaultUri"                    = dependency.key_vault.outputs.vault_uri
     "Storage__AccountName"                  = dependency.storage_secondary.outputs.name
     "Storage__BlobEndpoint"                 = dependency.storage_secondary.outputs.primary_blob_endpoint

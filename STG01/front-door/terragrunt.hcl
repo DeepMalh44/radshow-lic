@@ -46,6 +46,24 @@ dependency "storage_secondary" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "app_service" {
+  config_path = "../app-service"
+
+  mock_outputs = {
+    default_hostname = "app-radshow-stg01-cin.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "app_service_secondary" {
+  config_path = "../app-service-secondary"
+
+  mock_outputs = {
+    default_hostname = "app-radshow-stg01-sin.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   profile_name        = "afd-${local.env_vars.locals.name_prefix}"
   resource_group_name = dependency.resource_group.outputs.name
@@ -80,6 +98,21 @@ inputs = {
       health_probe = {
         interval_in_seconds = 30
         path                = "/index.html"
+        protocol            = "Https"
+        request_type        = "GET"
+      }
+      load_balancing = {
+        additional_latency_in_milliseconds = 0
+        sample_size                        = 4
+        successful_samples_required        = 2
+      }
+    }
+    "og-app" = {
+      session_affinity_enabled = false
+      restore_traffic_time_to_healed_or_new_endpoint_in_minutes = 10
+      health_probe = {
+        interval_in_seconds = 30
+        path                = "/app/healthz"
         protocol            = "Https"
         request_type        = "GET"
       }
@@ -137,6 +170,28 @@ inputs = {
       priority                       = 2
       weight                         = 1000
     }
+    "app-primary" = {
+      origin_group_key               = "og-app"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.app_service.outputs.default_hostname
+      origin_host_header             = dependency.app_service.outputs.default_hostname
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 1
+      weight                         = 1000
+    }
+    "app-secondary" = {
+      origin_group_key               = "og-app"
+      enabled                        = true
+      certificate_name_check_enabled = true
+      host_name                      = dependency.app_service_secondary.outputs.default_hostname
+      origin_host_header             = dependency.app_service_secondary.outputs.default_hostname
+      http_port                      = 80
+      https_port                     = 443
+      priority                       = 2
+      weight                         = 1000
+    }
   }
 
   # ── Routes ──
@@ -149,6 +204,17 @@ inputs = {
       forwarding_protocol    = "HttpsOnly"
       https_redirect_enabled = true
       patterns_to_match      = ["/api/*"]
+      supported_protocols    = ["Http", "Https"]
+      link_to_default_domain = true
+    }
+    "route-app" = {
+      endpoint_key           = "ep-spa"
+      origin_group_key       = "og-app"
+      origin_keys            = ["app-primary", "app-secondary"]
+      enabled                = true
+      forwarding_protocol    = "HttpsOnly"
+      https_redirect_enabled = true
+      patterns_to_match      = ["/app/*"]
       supported_protocols    = ["Http", "Https"]
       link_to_default_domain = true
     }

@@ -31,6 +31,24 @@ dependency "app_service_secondary" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "container_apps" {
+  config_path = "../container-apps"
+
+  mock_outputs = {
+    container_app_identity_principal_ids = { "products" = "00000000-0000-0000-0000-000000000010" }
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "container_apps_secondary" {
+  config_path = "../container-apps-secondary"
+
+  mock_outputs = {
+    container_app_identity_principal_ids = { "products" = "00000000-0000-0000-0000-000000000011" }
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "function_app" {
   config_path = "../function-app"
 
@@ -141,6 +159,14 @@ inputs = {
       description          = "App Service MI accesses Storage blobs"
     }
 
+    # App Service → AcrPull (pull container images from ACR via MI)
+    "app-acr-pull" = {
+      scope                = dependency.container_registry.outputs.id
+      role_definition_name = "AcrPull"
+      principal_id         = dependency.app_service.outputs.identity_principal_id
+      description          = "App Service MI pulls container images from ACR"
+    }
+
     # Function App → Key Vault Secrets Officer (reads + writes for failover active-region)
     "func-kv-secrets" = {
       scope                = dependency.key_vault.outputs.id
@@ -215,6 +241,14 @@ inputs = {
       description          = "App Service Secondary MI accesses Storage blobs"
     }
 
+    # App Service Secondary → AcrPull (same ACR, geo-replicated)
+    "app-sec-acr-pull" = {
+      scope                = dependency.container_registry.outputs.id
+      role_definition_name = "AcrPull"
+      principal_id         = dependency.app_service_secondary.outputs.identity_principal_id
+      description          = "App Service Secondary MI pulls container images from ACR"
+    }
+
     # Function App Secondary → Key Vault Secondary Secrets Officer (reads + writes for failover)
     "func-sec-kv-secrets" = {
       scope                = dependency.key_vault_secondary.outputs.id
@@ -287,6 +321,40 @@ inputs = {
       role_definition_name = "Storage Blob Data Contributor"
       principal_id         = "6952ac03-12b8-4bd2-8697-9b624583b14f"
       description          = "CI/CD SP uploads SPA to secondary Storage $web"
+    }
+
+    # --- Container Apps (Products API) ---
+
+    # Container App Primary → AcrPull
+    "ca-products-acr-pull" = {
+      scope                = dependency.container_registry.outputs.id
+      role_definition_name = "AcrPull"
+      principal_id         = dependency.container_apps.outputs.container_app_identity_principal_ids["products"]
+      description          = "Container App Products MI pulls images from ACR"
+    }
+
+    # Container App Primary → Key Vault Secrets User
+    "ca-products-kv-secrets" = {
+      scope                = dependency.key_vault.outputs.id
+      role_definition_name = "Key Vault Secrets User"
+      principal_id         = dependency.container_apps.outputs.container_app_identity_principal_ids["products"]
+      description          = "Container App Products MI reads Key Vault secrets"
+    }
+
+    # Container App Secondary → AcrPull
+    "ca-products-sec-acr-pull" = {
+      scope                = dependency.container_registry.outputs.id
+      role_definition_name = "AcrPull"
+      principal_id         = dependency.container_apps_secondary.outputs.container_app_identity_principal_ids["products"]
+      description          = "Container App Products Secondary MI pulls images from ACR"
+    }
+
+    # Container App Secondary → Key Vault Secondary Secrets User
+    "ca-products-sec-kv-secrets" = {
+      scope                = dependency.key_vault_secondary.outputs.id
+      role_definition_name = "Key Vault Secrets User"
+      principal_id         = dependency.container_apps_secondary.outputs.container_app_identity_principal_ids["products"]
+      description          = "Container App Products Secondary MI reads Key Vault secrets"
     }
   }
 }
