@@ -25,6 +25,9 @@ locals {
   aca_min_replicas      = 1
   aca_max_replicas      = 3
 
+  # CI/CD Service Principal (OIDC federated credential)
+  cicd_sp_object_id = "6952ac03-12b8-4bd2-8697-9b624583b14f"
+
   # Feature flags
   enable_dr             = false  # DR not needed in dev
   enable_waf            = false  # WAF not needed in dev

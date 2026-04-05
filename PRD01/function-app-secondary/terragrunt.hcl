@@ -39,6 +39,16 @@ dependency "sql_mi" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "sql_mi_fog" {
+  config_path = "../sql-mi-fog"
+
+  mock_outputs = {
+    name          = "mock-fog"
+    listener_fqdn = "mock-fog.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "redis_secondary" {
   config_path = "../redis-secondary"
 
@@ -86,6 +96,15 @@ dependency "key_vault" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "apim" {
+  config_path = "../apim"
+
+  mock_outputs = {
+    gateway_url = "https://apim-radshow-prd01-scus.azure-api.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "func-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name           = dependency.resource_group_secondary.outputs.name
@@ -95,14 +114,13 @@ inputs = {
   storage_account_name          = dependency.storage_secondary.outputs.name
   storage_uses_managed_identity = true
   storage_account_id            = dependency.storage_secondary.outputs.id
-  storage_account_access_key    = dependency.storage_secondary.outputs.primary_access_key
   vnet_integration_subnet_id    = dependency.networking_secondary.outputs.subnet_ids["snet-func"]
   log_analytics_workspace_id    = dependency.monitoring.outputs.log_analytics_workspace_id
   application_insights_connection_string = dependency.monitoring.outputs.secondary_app_insights_connection_string
 
   app_settings = {
     "AZURE_REGION"               = local.env_vars.locals.secondary_location
-    "SqlConnection"              = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+    "SqlConnection"              = "Server=${dependency.sql_mi_fog.outputs.listener_fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     "KeyVault__VaultUri"         = dependency.key_vault_secondary.outputs.vault_uri
     "KeyVault__PeerVaultUri"     = dependency.key_vault.outputs.vault_uri
     "Storage__AccountName"       = dependency.storage_secondary.outputs.name
@@ -111,10 +129,11 @@ inputs = {
     "SUBSCRIPTION_ID"            = local.env_vars.locals.subscription_id
     "RESOURCE_GROUP_PRIMARY"     = dependency.resource_group.outputs.name
     "RESOURCE_GROUP_SECONDARY"   = dependency.resource_group_secondary.outputs.name
-    "SQL_MI_FOG_NAME"            = dependency.sql_mi.outputs.failover_group_name
+    "SQL_MI_FOG_NAME"            = dependency.sql_mi_fog.outputs.name
     "FRONT_DOOR_PROFILE_NAME"    = dependency.front_door.outputs.profile_name
-    "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa"
+    "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa,og-app"
     "PRIMARY_LOCATION"           = local.env_vars.locals.primary_location
     "SECONDARY_LOCATION"         = local.env_vars.locals.secondary_location
+    "APIM_GATEWAY_URL"           = dependency.apim.outputs.gateway_url
   }
 }

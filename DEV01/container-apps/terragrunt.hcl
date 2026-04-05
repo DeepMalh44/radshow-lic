@@ -38,6 +38,9 @@ dependency "monitoring" {
 }
 
 inputs = {
+  vnet_ids_for_dns_link = [
+    dependency.networking.outputs.vnet_id,
+  ]
   environment_name       = "cae-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name    = dependency.resource_group.outputs.name
   location               = dependency.resource_group.outputs.location

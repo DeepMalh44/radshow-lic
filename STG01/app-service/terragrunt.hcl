@@ -33,6 +33,15 @@ dependency "sql_mi" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "sql_mi_fog" {
+  config_path = "../sql-mi-fog"
+
+  mock_outputs = {
+    listener_fqdn = "mock-fog.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "redis" {
   config_path = "../redis"
 
@@ -96,7 +105,7 @@ inputs = {
   connection_strings = {
     "DefaultConnection" = {
       type  = "SQLAzure"
-      value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+      value = "Server=${dependency.sql_mi_fog.outputs.listener_fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     }
   }
 }

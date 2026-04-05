@@ -34,6 +34,15 @@ dependency "sql_mi" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "sql_mi_fog" {
+  config_path = "../sql-mi-fog"
+
+  mock_outputs = {
+    listener_fqdn = "mock-fog.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 dependency "redis_secondary" {
   config_path = "../redis-secondary"
 
@@ -64,6 +73,15 @@ dependency "storage_secondary" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "apim" {
+  config_path = "../apim"
+
+  mock_outputs = {
+    gateway_url = "https://apim-radshow-prd01-scus.azure-api.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "app-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name           = dependency.resource_group_secondary.outputs.name
@@ -76,6 +94,9 @@ inputs = {
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING" = dependency.monitoring.outputs.secondary_app_insights_connection_string
     "ASPNETCORE_ENVIRONMENT"                = "Production"
+    "ASPNETCORE_PATHBASE"                   = "/app"
+    "APIM_GATEWAY_URL"                      = dependency.apim.outputs.gateway_url
+    "AZURE_REGION"                          = local.env_vars.locals.secondary_location
     "KeyVault__VaultUri"                    = dependency.key_vault.outputs.vault_uri
     "Storage__AccountName"                  = dependency.storage_secondary.outputs.name
     "Storage__BlobEndpoint"                 = dependency.storage_secondary.outputs.primary_blob_endpoint
@@ -85,7 +106,7 @@ inputs = {
   connection_strings = {
     "DefaultConnection" = {
       type  = "SQLAzure"
-      value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
+      value = "Server=${dependency.sql_mi_fog.outputs.listener_fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false"
     }
   }
 }
