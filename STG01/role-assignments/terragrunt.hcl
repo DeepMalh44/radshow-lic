@@ -233,6 +233,14 @@ inputs = {
       description          = "App Service Secondary MI reads Key Vault secrets"
     }
 
+    # App Service Secondary → Key Vault Primary Secrets User (reads active-region for health-based failover)
+    "app-sec-kv-primary-secrets" = {
+      scope                = dependency.key_vault.outputs.id
+      role_definition_name = "Key Vault Secrets User"
+      principal_id         = dependency.app_service_secondary.outputs.identity_principal_id
+      description          = "App Service Secondary MI reads active-region from primary KV for health-based failover"
+    }
+
     # App Service Secondary → Storage Secondary Blob Data Contributor
     "app-sec-storage-blob" = {
       scope                = dependency.storage_secondary.outputs.id
