@@ -35,16 +35,29 @@ dependency "container_registry" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "sql_mi" {
-  config_path = "../sql-mi"
+dependency "sql_mi_fog" {
+  config_path = "../sql-mi-fog"
 
   mock_outputs = {
-    fqdn = "mock-sqlmi.database.windows.net"
+    listener_fqdn = "mock-fog.database.windows.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "networking" {
+  config_path = "../networking"
+
+  mock_outputs = {
+    vnet_id = "mock-primary-vnet-id"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 inputs = {
+  vnet_ids_for_dns_link = [
+    dependency.networking_secondary.outputs.vnet_id,
+    dependency.networking.outputs.vnet_id,
+  ]
   environment_name           = "cae-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.secondary_short}"
   resource_group_name        = dependency.resource_group_secondary.outputs.name
   location                   = local.env_vars.locals.secondary_location
@@ -72,7 +85,7 @@ inputs = {
             env = [
               { name = "ASPNETCORE_ENVIRONMENT", value = "Staging" },
               { name = "AZURE_REGION", value = local.env_vars.locals.secondary_location },
-              { name = "SqlConnection", value = "Server=${dependency.sql_mi.outputs.fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false" },
+              { name = "SqlConnection", value = "Server=${dependency.sql_mi_fog.outputs.listener_fqdn};Database=radshow;Authentication=Active Directory Managed Identity;Encrypt=true;TrustServerCertificate=false" },
               { name = "APPLICATIONINSIGHTS_CONNECTION_STRING", value = dependency.monitoring.outputs.secondary_app_insights_connection_string }
             ]
           }
