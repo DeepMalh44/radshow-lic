@@ -104,6 +104,24 @@ dependency "apim" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "app_service" {
+  config_path = "../app-service"
+
+  mock_outputs = {
+    default_hostname = "app-mock.azurewebsites.net"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
+dependency "container_apps" {
+  config_path = "../container-apps"
+
+  mock_outputs = {
+    container_app_fqdns = { "products" = "ca-mock.azurecontainerapps.io" }
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   name                          = "func-${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
   resource_group_name           = dependency.resource_group.outputs.name
@@ -134,5 +152,7 @@ inputs = {
     "PRIMARY_LOCATION"           = local.env_vars.locals.primary_location
     "SECONDARY_LOCATION"         = local.env_vars.locals.secondary_location
     "APIM_GATEWAY_URL"           = dependency.apim.outputs.gateway_url
+    "WEBAPP_HEALTH_URL"          = "https://${dependency.app_service.outputs.default_hostname}/app/healthz"
+    "CONTAINER_APP_HEALTH_URL"   = "https://${dependency.container_apps.outputs.container_app_fqdns["products"]}/healthz"
   }
 }
