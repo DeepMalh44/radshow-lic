@@ -54,8 +54,8 @@ dependency "redis_secondary" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "key_vault" {
-  config_path = "../key-vault"
+dependency "key_vault_secondary" {
+  config_path = "../key-vault-secondary"
 
   mock_outputs = {
     vault_uri = "https://mock-kv.vault.azure.net/"
@@ -97,7 +97,7 @@ inputs = {
     "ASPNETCORE_PATHBASE"                   = "/app"
     "APIM_GATEWAY_URL"                      = dependency.apim.outputs.gateway_url
     "AZURE_REGION"                          = local.env_vars.locals.secondary_location
-    "KeyVault__VaultUri"                    = dependency.key_vault.outputs.vault_uri
+    "KeyVault__VaultUri"                    = dependency.key_vault_secondary.outputs.vault_uri
     "Storage__AccountName"                  = dependency.storage_secondary.outputs.name
     "Storage__BlobEndpoint"                 = dependency.storage_secondary.outputs.primary_blob_endpoint
     "Redis__ConnectionString"               = "${dependency.redis_secondary.outputs.hostname}:${dependency.redis_secondary.outputs.ssl_port},password=${dependency.redis_secondary.outputs.primary_access_key},ssl=True,abortConnect=False"
