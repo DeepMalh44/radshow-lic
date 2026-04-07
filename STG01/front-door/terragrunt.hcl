@@ -158,6 +158,8 @@ inputs = {
       https_port                     = 443
       priority                       = 1
       weight                         = 1000
+      # NOTE: Private Link not possible — South India (secondary) does not support
+      # AFD Private Link, and all origins in a group must be consistent (all PL or none).
     }
     "spa-secondary" = {
       origin_group_key               = "og-spa"
@@ -180,6 +182,7 @@ inputs = {
       https_port                     = 443
       priority                       = 1
       weight                         = 1000
+      # NOTE: Private Link not possible — see spa-primary comment.
     }
     "app-secondary" = {
       origin_group_key               = "og-app"
