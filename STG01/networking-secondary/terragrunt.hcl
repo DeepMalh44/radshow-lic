@@ -72,5 +72,9 @@ inputs = {
         actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
       }
     }
+    "snet-appgw" = {
+      address_prefixes = ["10.2.10.0/24"]
+      is_appgw_subnet  = true
+    }
   }
 }

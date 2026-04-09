@@ -26,4 +26,7 @@ inputs = {
   location                   = dependency.resource_group.outputs.location
   tenant_id                  = local.env_vars.locals.tenant_id
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
+
+  generate_appgw_cert = true
+  name_prefix         = "${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
 }

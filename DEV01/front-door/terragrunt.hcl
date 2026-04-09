@@ -1,5 +1,5 @@
 # DEV01 / front-door
-# Single region — no active-passive (enable_dr=false)
+# Single region — traffic routed through Application Gateway
 include "root" {
   path = find_in_parent_folders()
 }
@@ -20,20 +20,11 @@ dependency "resource_group" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "apim" {
-  config_path = "../apim"
+dependency "application_gateway" {
+  config_path = "../application-gateway"
 
   mock_outputs = {
-    gateway_url = "https://apim-radshow-dev01-swc.azure-api.net"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-}
-
-dependency "storage" {
-  config_path = "../storage"
-
-  mock_outputs = {
-    primary_web_host = "stradshowdev01swc.z21.web.core.windows.net"
+    public_ip_address = "10.0.0.1"
   }
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
@@ -43,13 +34,12 @@ inputs = {
   resource_group_name = dependency.resource_group.outputs.name
   waf_policy_name     = "wafafd${replace(local.env_vars.locals.name_prefix, "-", "")}"
 
-  # Single endpoint — SPA + API routes colocated so relative /api/* calls work
   endpoints = {
     "ep-spa" = { enabled = true }
   }
 
   origin_groups = {
-    "og-api" = {
+    "og-appgw" = {
       session_affinity_enabled = false
       health_probe = {
         interval_in_seconds = 30
@@ -63,40 +53,15 @@ inputs = {
         successful_samples_required        = 2
       }
     }
-    "og-spa" = {
-      session_affinity_enabled = false
-      health_probe = {
-        interval_in_seconds = 30
-        path                = "/index.html"
-        protocol            = "Https"
-        request_type        = "HEAD"
-      }
-      load_balancing = {
-        additional_latency_in_milliseconds = 0
-        sample_size                        = 4
-        successful_samples_required        = 2
-      }
-    }
   }
 
   origins = {
-    "apim-primary" = {
-      origin_group_key               = "og-api"
+    "appgw-primary" = {
+      origin_group_key               = "og-appgw"
       enabled                        = true
-      certificate_name_check_enabled = true
-      host_name                      = replace(dependency.apim.outputs.gateway_url, "https://", "")
-      origin_host_header             = replace(dependency.apim.outputs.gateway_url, "https://", "")
-      http_port                      = 80
-      https_port                     = 443
-      priority                       = 1
-      weight                         = 1000
-    }
-    "spa-primary" = {
-      origin_group_key               = "og-spa"
-      enabled                        = true
-      certificate_name_check_enabled = true
-      host_name                      = dependency.storage.outputs.primary_web_host
-      origin_host_header             = dependency.storage.outputs.primary_web_host
+      certificate_name_check_enabled = false
+      host_name                      = dependency.application_gateway.outputs.public_ip_address
+      origin_host_header             = dependency.application_gateway.outputs.public_ip_address
       http_port                      = 80
       https_port                     = 443
       priority                       = 1
@@ -105,35 +70,16 @@ inputs = {
   }
 
   routes = {
-    "route-api" = {
+    "route-all" = {
       endpoint_key           = "ep-spa"
-      origin_group_key       = "og-api"
-      origin_keys            = ["apim-primary"]
-      enabled                = true
-      forwarding_protocol    = "HttpsOnly"
-      https_redirect_enabled = true
-      patterns_to_match      = ["/api/*"]
-      supported_protocols    = ["Http", "Https"]
-      link_to_default_domain = true
-    }
-    "route-spa" = {
-      endpoint_key           = "ep-spa"
-      origin_group_key       = "og-spa"
-      origin_keys            = ["spa-primary"]
+      origin_group_key       = "og-appgw"
+      origin_keys            = ["appgw-primary"]
       enabled                = true
       forwarding_protocol    = "HttpsOnly"
       https_redirect_enabled = true
       patterns_to_match      = ["/*"]
       supported_protocols    = ["Http", "Https"]
       link_to_default_domain = true
-      cache = {
-        query_string_caching_behavior = "IgnoreQueryString"
-        compression_enabled           = true
-        content_types_to_compress     = [
-          "text/html", "text/css", "application/javascript",
-          "application/json", "image/svg+xml"
-        ]
-      }
     }
   }
 }

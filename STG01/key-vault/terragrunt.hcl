@@ -31,4 +31,7 @@ inputs = {
   # (KV has public_network_access=false + default_action=Deny;
   #  terraform cannot reach KV data plane from outside the VNet)
   secrets = {}
+
+  generate_appgw_cert = true
+  name_prefix         = "${local.env_vars.locals.name_prefix}-${local.env_vars.locals.primary_short}"
 }
