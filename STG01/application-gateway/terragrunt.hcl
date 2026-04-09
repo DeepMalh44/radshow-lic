@@ -35,14 +35,8 @@ dependency "key_vault" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "front_door" {
-  config_path = "../front-door"
-
-  mock_outputs = {
-    front_door_id = "00000000-0000-0000-0000-000000000000"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-}
+# NOTE: FD dependency removed to break cycle (AppGW↔FD).
+# FD profile already exists; resource_guid is stable.
 
 dependency "apim" {
   config_path = "../apim"
@@ -78,7 +72,7 @@ inputs = {
   subnet_id                  = dependency.networking.outputs.subnet_ids["snet-appgw"]
   key_vault_id               = dependency.key_vault.outputs.id
   key_vault_secret_id        = dependency.key_vault.outputs.appgw_cert_secret_id
-  front_door_id              = dependency.front_door.outputs.front_door_id
+  front_door_id              = "d6f9998e-db6a-4143-9ba7-71d17c486ece" # afd-radshow-stg01 resource_guid
   apim_fqdn                  = replace(dependency.apim.outputs.gateway_url, "https://", "")
   storage_web_fqdn           = dependency.storage.outputs.primary_web_host
   log_analytics_workspace_id = dependency.monitoring.outputs.log_analytics_workspace_id
