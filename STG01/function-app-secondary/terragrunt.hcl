@@ -105,15 +105,6 @@ dependency "apim" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
-dependency "app_service_secondary" {
-  config_path = "../app-service-secondary"
-
-  mock_outputs = {
-    default_hostname = "app-mock.azurewebsites.net"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-}
-
 dependency "container_apps_secondary" {
   config_path = "../container-apps-secondary"
 
@@ -149,11 +140,10 @@ inputs = {
     "RESOURCE_GROUP_SECONDARY"   = dependency.resource_group_secondary.outputs.name
     "SQL_MI_FOG_NAME"            = dependency.sql_mi_fog.outputs.name
     "FRONT_DOOR_PROFILE_NAME"    = dependency.front_door.outputs.profile_name
-    "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa,og-app"
+    "FRONT_DOOR_ORIGIN_GROUP_NAME" = "og-api,og-spa"
     "PRIMARY_LOCATION"           = local.env_vars.locals.primary_location
     "SECONDARY_LOCATION"         = local.env_vars.locals.secondary_location
     "APIM_GATEWAY_URL"           = dependency.apim.outputs.gateway_url
-    "WEBAPP_HEALTH_URL"          = "https://${dependency.app_service_secondary.outputs.default_hostname}/app/healthz"
     "CONTAINER_APP_HEALTH_URL"   = "https://${dependency.container_apps_secondary.outputs.container_app_fqdns["products"]}/healthz"
   }
 }
