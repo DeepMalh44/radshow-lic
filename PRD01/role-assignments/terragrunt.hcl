@@ -1,5 +1,5 @@
 # PRD01 / role-assignments
-# RBAC: App Service & Function App managed identities → Key Vault, Storage, ACR
+# RBAC: Function App & Container App managed identities → Key Vault, Storage, ACR
 include "root" {
   path = find_in_parent_folders()
 }
@@ -11,24 +11,6 @@ include "env" {
 
 locals {
   env_vars = read_terragrunt_config(find_in_parent_folders("env.hcl"))
-}
-
-dependency "app_service" {
-  config_path = "../app-service"
-
-  mock_outputs = {
-    identity_principal_id = "00000000-0000-0000-0000-000000000001"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
-}
-
-dependency "app_service_secondary" {
-  config_path = "../app-service-secondary"
-
-  mock_outputs = {
-    identity_principal_id = "00000000-0000-0000-0000-000000000005"
-  }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
 dependency "function_app" {
@@ -124,24 +106,7 @@ dependency "front_door" {
 inputs = {
   role_assignments = {
     # --- Primary Region ---
-
-    # App Service → Key Vault Secrets User
-    "app-kv-secrets" = {
-      scope                = dependency.key_vault.outputs.id
-      role_definition_name = "Key Vault Secrets User"
-      principal_id         = dependency.app_service.outputs.identity_principal_id
-      description          = "App Service MI reads Key Vault secrets"
-    }
-
-    # App Service → Storage Blob Data Contributor
-    "app-storage-blob" = {
-      scope                = dependency.storage.outputs.id
-      role_definition_name = "Storage Blob Data Contributor"
-      principal_id         = dependency.app_service.outputs.identity_principal_id
-      description          = "App Service MI accesses Storage blobs"
-    }
-
-    # Function App → Key Vault Secrets Officer (reads + writes for failover active-region)
+# Function App → Key Vault Secrets Officer (reads + writes for failover active-region)
     "func-kv-secrets" = {
       scope                = dependency.key_vault.outputs.id
       role_definition_name = "Key Vault Secrets Officer"
@@ -198,24 +163,7 @@ inputs = {
     }
 
     # --- Secondary Region ---
-
-    # App Service Secondary → Key Vault Secondary Secrets User
-    "app-sec-kv-secrets" = {
-      scope                = dependency.key_vault_secondary.outputs.id
-      role_definition_name = "Key Vault Secrets User"
-      principal_id         = dependency.app_service_secondary.outputs.identity_principal_id
-      description          = "App Service Secondary MI reads Key Vault secrets"
-    }
-
-    # App Service Secondary → Storage Secondary Blob Data Contributor
-    "app-sec-storage-blob" = {
-      scope                = dependency.storage_secondary.outputs.id
-      role_definition_name = "Storage Blob Data Contributor"
-      principal_id         = dependency.app_service_secondary.outputs.identity_principal_id
-      description          = "App Service Secondary MI accesses Storage blobs"
-    }
-
-    # Function App Secondary → Key Vault Secondary Secrets Officer (reads + writes for failover)
+# Function App Secondary → Key Vault Secondary Secrets Officer (reads + writes for failover)
     "func-sec-kv-secrets" = {
       scope                = dependency.key_vault_secondary.outputs.id
       role_definition_name = "Key Vault Secrets Officer"
