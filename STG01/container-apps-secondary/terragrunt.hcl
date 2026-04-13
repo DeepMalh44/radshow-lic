@@ -54,6 +54,7 @@ dependency "networking" {
 }
 
 inputs = {
+  acr_id = dependency.container_registry.outputs.id
   vnet_ids_for_dns_link = [
     dependency.networking_secondary.outputs.vnet_id,
     dependency.networking.outputs.vnet_id,

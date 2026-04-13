@@ -256,14 +256,9 @@ inputs = {
     }
 
     # --- Container Apps (Products API) ---
-
-    # Container App Primary → AcrPull
-    "ca-products-acr-pull" = {
-      scope                = dependency.container_registry.outputs.id
-      role_definition_name = "AcrPull"
-      principal_id         = dependency.container_apps.outputs.container_app_identity_principal_ids["products"]
-      description          = "Container App Products MI pulls images from ACR"
-    }
+    # NOTE: AcrPull is now handled inside the container-apps module via a
+    # User-Assigned Managed Identity, eliminating the chicken-and-egg ordering
+    # issue. Only KV Secrets User assignments remain here.
 
     # Container App Primary → Key Vault Secrets User
     "ca-products-kv-secrets" = {
@@ -271,14 +266,6 @@ inputs = {
       role_definition_name = "Key Vault Secrets User"
       principal_id         = dependency.container_apps.outputs.container_app_identity_principal_ids["products"]
       description          = "Container App Products MI reads Key Vault secrets"
-    }
-
-    # Container App Secondary → AcrPull
-    "ca-products-sec-acr-pull" = {
-      scope                = dependency.container_registry.outputs.id
-      role_definition_name = "AcrPull"
-      principal_id         = dependency.container_apps_secondary.outputs.container_app_identity_principal_ids["products"]
-      description          = "Container App Products Secondary MI pulls images from ACR"
     }
 
     # Container App Secondary → Key Vault Secondary Secrets User
